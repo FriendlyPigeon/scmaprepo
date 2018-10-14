@@ -2,6 +2,9 @@
   "name": "scmaprepo",
   "version": "0.0.1",
   "description": "Sven co-op map repository website",
+  "engines": {
+    "node": "8.11.4"
+  },
   "main": "app.js",
   "scripts": {
     "start": "node src/server/index.js",
