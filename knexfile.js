@@ -16,12 +16,7 @@ module.exports = {
   },
   production: {
     client: 'pg',
-    connection: {
-      socketPath: '/cloudsql/scmaprepo:us-central1:scmaprepo',
-      user: 'postgres',
-      password: 'WdNP0Byf95RuLJHxHxu0',
-      database: 'scmaprepo_test'
-    },
+    connection: process.env.DATABASE_URL,
     migrations: {
       directory: __dirname + '/src/server/db/migrations',
     },
