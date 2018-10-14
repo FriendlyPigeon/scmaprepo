@@ -4,9 +4,10 @@
   "description": "Sven co-op map repository website",
   "main": "app.js",
   "scripts": {
-    "start": "npm run build && node src/server/index.js",
+    "start": "node src/server/index.js",
     "start-dev": "webpack-dev-server --mode development --open",
-    "build": "webpack --mode production",
+    "build": "webpack --mode production --config webpack.config.js",
+    "prestart": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon src/server/index.js",
     "prod": "npm run build && node src/server/index.js",
