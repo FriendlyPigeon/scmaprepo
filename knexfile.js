@@ -5,8 +5,7 @@ module.exports = {
       host: '127.0.0.1',
       user: 'postgres',
       password: 'postgres',
-      database: 'scmaprepo_test',
-      daprepo_test'
+      database: 'scmaprepo_test'
     },
     migrations: {
       directory: __dirname + '/src/server/db/migrations',
