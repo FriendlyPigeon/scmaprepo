@@ -3,6 +3,3 @@ runtime: nodejs8
 handlers:
 - url: /.* 
   script: auto
-
-environment_var:
-  NODE_ENV: 'production'
