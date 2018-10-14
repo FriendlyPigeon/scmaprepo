@@ -402,11 +402,4 @@ app.get('/api/mapper/:id', function(req, res) {
     })
 })
 
-if(module === require.main) {
-  const server = app.listen(process.env.PORT || 8080, () => {
-    const port = server.address().port;
-    console.log(`App listening on port ${port}`);
-  });
-}
-
-module.exports = app;
+app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))
