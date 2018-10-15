@@ -435,7 +435,7 @@ app.get('/api/mapper/:id', function(req, res) {
 })
 
 app.get('*', function(req, res) {
-  res.sendFile(__dirname, )
+  res.sendFile(__dirname + '../dist/index.html')
 })
 
 app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))
