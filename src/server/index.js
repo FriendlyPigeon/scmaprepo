@@ -194,6 +194,38 @@ app.get('/api/mappers', function(req, res) {
     })
 })
 
+app.post('/api/map', function(req, res) {
+  knex.transaction(function(transaction) {
+    return transaction
+      .insert({
+        name: req.body.name,
+      })
+      .into('maps')
+      .returning('id')
+      .then(function(mapId) {
+        return Promise.all(req.body.authors.map(author => {
+          return transaction
+            .insert({
+              mapper_id: author,
+              map_id: mapId[0],
+            })
+            .into('authors')
+        }))
+      })
+  })
+  .then(function() {
+    res.send({
+      success: 'Map successfully submitted'
+    })
+  })
+  .catch(function(error) {
+    console.log(error)
+    res.status(400).send({
+      error: error
+    })
+  })
+})
+
 app.put('/api/map/:id', function(req, res) {
   knex('authors')
     .select('authors.mapper_id')
@@ -400,6 +432,10 @@ app.get('/api/mapper/:id', function(req, res) {
     .then(function(mapper) {
       res.send(mapper);
     })
+})
+
+app.get('*', function(req, res) {
+  res.sendFile(__dirname, )
 })
 
 app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))

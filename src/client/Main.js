@@ -4,6 +4,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 import LoggedInContext from './LoggedInContext';
 
 import Maps from './Maps';
+import MapNew from './MapNew';
 import Map from './Map';
 import MapEdit from './MapEdit';
 import Mappers from './Mappers';
@@ -26,6 +27,7 @@ export default class Main extends Component {
         {({ loggedIn }) => (
           <Switch>
             <Route path='/maps' component={Maps} />
+            <Route path='/map/new' component={MapNew} />
             <Route path='/map/:id/edit' component={MapEdit} />
             <Route path='/map/:id' component={Map} />
             <Route path='/mappers' component={Mappers} />
