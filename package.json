@@ -3,14 +3,13 @@
   "version": "0.0.1",
   "description": "Sven co-op map repository website",
   "engines": {
-    "node": "8.11.4"
+    "node": ">=8"
   },
   "main": "app.js",
   "scripts": {
     "start": "node src/server/index.js",
     "start-dev": "webpack-dev-server --mode development --open",
-    "build": "knex migrate:latest && ./node_modules/.bin/webpack --mode production --config webpack.config.js",
-    "prestart": "npm run build",
+    "prestart": "knex migrate:latest && ./node_modules/.bin/webpack --mode production --config webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon src/server/index.js",
     "prod": "npm run build && node src/server/index.js",
