@@ -16,7 +16,12 @@ module.exports = {
   },
   production: {
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+    connection: {
+      socketPath: `cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`,
+      user: process.env.SQL_USER,
+      password: process.env.SQL_PASSWORD,
+      database: process.env.SQL_DATABASE,
+    },
     migrations: {
       directory: __dirname + '/src/server/db/migrations',
     },
