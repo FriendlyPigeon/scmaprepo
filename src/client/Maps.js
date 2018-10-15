@@ -39,7 +39,7 @@ export default class Maps extends Component {
       <Segment>
         {error && <Message negative>{error}</Message>}
         <h3>
-          <Link to='/add-map'>New map</Link>
+          <Link to='/map/new'>New map</Link>
         </h3>
         <Divider section />
         {maps ?
