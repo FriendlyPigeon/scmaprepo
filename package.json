@@ -7,9 +7,9 @@
   },
   "main": "app.js",
   "scripts": {
-    "start": "node src/server/index.js",
+    "start": "knex migrate:latest && node src/server/index.js",
+    "prestart": "webpack --mode production --config webpack.config.js",
     "start-dev": "webpack-dev-server --mode development --open",
-    "prestart": "knex migrate:latest && ./node_modules/.bin/webpack --mode production --config webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon src/server/index.js",
     "prod": "npm run build && node src/server/index.js",

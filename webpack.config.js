@@ -6,12 +6,9 @@ const htmlPlugin = new HtmlWebPackPlugin({
   publicPath: "/"
 });
 
-const outputDirectory = 'dist';
-
 module.exports = {
   entry: './src/client/index.js',
   output: {
-    publicPath: '/',
     filename: 'bundle.js'
   },
   module: {
