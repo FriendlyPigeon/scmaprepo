@@ -15,8 +15,7 @@ export default class App extends Component {
       loggedInUser: null,
       logInError: null,
     }
-
-    this.handleLogin = this.handleLogin.bind(this);
+    
     this.handleLogout = this.handleLogout.bind(this);
   }
 
@@ -34,50 +33,16 @@ export default class App extends Component {
         if(response.authenticated === true) {
           this.setState({
             loggedIn: true,
-            loggedInUser: response.userId,
+            loggedInUser: response.steamid,
             logInError: null,
           })
         } else {
-          console.log('reached');
           this.setState({
             loggedIn: false,
             loggedInUser: null,
             logInError: null,
           })
         }
-      }
-      else { throw response }
-    })
-    .catch(error => 
-      this.setState({
-        logInError: error.error,
-      })
-    )
-  }
-
-  handleLogin(event, email, password) {
-    event.preventDefault();
-
-    fetch('/api/users/login', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      })
-    })
-    .then(response => response.json())
-    .then((response) => {
-      console.log(response)
-      if(!response.error) { 
-        this.setState({
-          loggedIn: true,
-          loggedInUser: response.userId,
-          logInError: null,
-        })
       }
       else { throw response }
     })
@@ -114,7 +79,6 @@ export default class App extends Component {
           loggedIn: this.state.loggedIn,
           loggedInUser: this.state.loggedInUser,
           logInError: this.state.logInError,
-          handleLogin: this.handleLogin,
           handleLogout: this.handleLogout,
         }}>
           <Navbar />

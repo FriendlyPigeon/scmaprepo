@@ -93,21 +93,6 @@ export default class Register extends Component {
             value={email}
             onChange={this.onFieldChange}
           />
-          <Form.Input 
-            name="password"
-            label="Password"
-            type="password"
-            autoComplete="off"
-            value={password}
-            onChange={this.onFieldChange}
-          />
-          <Form.Input 
-            name="password2"
-            label="Confirm password"
-            type="password"
-            value={password2}
-            onChange={this.onFieldChange}
-          />
           </Form.Group>
 
           <Button type="submit">Create account</Button>

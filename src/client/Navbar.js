@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-import { Menu } from 'semantic-ui-react';
+import { Menu, Image } from 'semantic-ui-react';
 
 import LoggedInContext from './LoggedInContext';
+
+import SteamLoginButton from './SteamLoginButton.png';
 
 const Navbar = () => (
   <LoggedInContext.Consumer>
@@ -44,21 +46,9 @@ const Navbar = () => (
     </Menu.Menu>
     :
     <Menu.Menu position='right'>
-      <Menu.Item
-        as={Link}
-        to='/register'
-        name='register'  
-      >
-        Register
-      </Menu.Item>
-
-      <Menu.Item
-        as={Link}
-        to='/login'
-        name='login'
-      >
-        Log in
-      </Menu.Item>
+      <a href='auth/steam'>
+        <img src={SteamLoginButton}></img>
+      </a>
     </Menu.Menu>
     }
   </Menu>

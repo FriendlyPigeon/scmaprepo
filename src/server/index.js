@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session');
-const bcrypt = require('bcryptjs');
+const steam = require('steam-login');
 const { check, validationResult } = require('express-validator/check');
 const bodyParser = require('body-parser');
 const knex = require('./db/knex');
@@ -18,6 +18,12 @@ app.use(session({
   saveUninitialized: true,
   resave: false,
 }));
+
+app.use(steam.middleware({
+  realm: 'http://localhost:8080/',
+  verify: 'http://localhost:8080/auth/steam/return',
+  apiKey: process.env.STEAM_API_KEY
+}))
 
 function findUsername(username) {
   return knex.select('username')
@@ -52,9 +58,7 @@ app.post('/api/users/register', [
   check('username', 'Username is taken').custom(username => findUsername(username)),
   check('email', 'Email is required').isLength(1),
   check('email', 'Email is not valid').isEmail(),
-  check('email', 'Email is taken').custom(email => findEmail(email)),
-  check('password', 'Password must be at least 6 characters').isLength(6),
-  check('password2', 'Passwords do not match').custom((password2, { req }) => password2 === req.body.password)
+  check('email', 'Email is taken').custom(email => findEmail(email))
 ], (req, res) => {
 
   const errors = validationResult(req);
@@ -62,84 +66,65 @@ app.post('/api/users/register', [
     return res.status(422).json({ errors: errors.array() });
   }
 
-  const passwordHash = bcrypt.hashSync(req.body.password, 10);
-
-  knex('users')
-    .insert({
-      username: req.body.username,
-      email: req.body.email,
-      password: passwordHash,
-    })
-    .returning(['username', 'email'])
-    .then(function(username, email) {
-      return res.send({
-        username: username,
-        email: email
+  // If logged in through steam
+  if(req.user.steamid) {
+    knex('users')
+      .insert({
+        username: req.body.username,
+        email: req.body.email,
+        steam_id: req.user.steamid,
       })
-    })
+      .returning(['username', 'email'])
+      .then(function(username, email) {
+        return res.send({
+          username: username,
+          email: email,
+        })
+      }) 
+  }
 })
 
 app.get('/api/users/heartbeat', function(req, res) {
-  if(req.session && req.session.userId) {
+  if(req.user && req.user.steamid) {
     res.send({
       authenticated: true,
-      userId: req.session.userId,
+      steamid: req.user.steamid,
     })
   } else {
     res.send({
       authenticated: false
     })
   }
-}) 
-
-app.post('/api/users/login', function(req, res) {
-  if(!req.body.email) {
-    return res.send({
-      error: 'You must enter an email to login'
-    })
-  }
-
-  knex.select('password')
-    .from('users')
-    .where('email', req.body.email)
-    .first()
-    .then(function(storedPassword) {
-      if(!storedPassword) {
-        return res.send({
-          error: 'Invalid email or password'
-        })
-      } else {
-        bcrypt.compare(req.body.password, storedPassword.password)
-        .then(passwordsMatch => {
-          if(passwordsMatch) {
-            knex.select('id')
-              .from('users')
-              .where('email', req.body.email)
-              .first()
-              .then(userId =>
-                req.session.userId = userId.id
-              )
-              .then(() =>
-                res.send({
-                  success: 'Successful login',
-                  userId: req.session.userId,
-                })
-              )
-          } else {
-            return res.send({
-              error: 'Invalid email or password'
-            })
-          }
-        })
-        .catch(error => {
-          console.log(error)
-        })
-      }
-    })
 })
 
+app.get('/auth/steam', 
+  steam.authenticate(),
+  function(req, res) {
+    res.redirect('/')
+  }
+)
+
+app.get('/auth/steam/return',
+  steam.verify(),
+  function(req, res) {
+    console.log(req.user)
+    knex.select('steam_id')
+      .from('users')
+      .where('steam_id', req.user.steamid)
+      .first()
+      .then(function(steam_id) {
+        // If account already exists
+        if(steam_id) {
+          res.redirect('/')
+        } else {
+          res.redirect('/register')
+        }
+      })
+  }
+)
+
 app.get('/api/users/logout', function(req, res) {
-  if(req.session.user) {
+  if(req.user) {
     res.clearCookie('connect.sid')
     res.send()
   }

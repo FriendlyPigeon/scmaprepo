@@ -5,8 +5,8 @@ exports.up = function(knex, Promise) {
   .createTable('users', function(table) {
     table.increments();
     table.string('username').unique().notNullable();
+    table.string('steam_id').unique().notNullable();
     table.string('email').unique().notNullable();
-    table.string('password').notNullable();
     table.boolean('is_admin').notNullable().defaultTo(false);
     table.timestamp('created_at').defaultTo(knex.fn.now());
     table.timestamp('updated_at').defaultTo(knex.fn.now());
