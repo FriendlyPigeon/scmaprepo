@@ -10,7 +10,6 @@ import MapEdit from './MapEdit';
 import Mappers from './Mappers';
 import Mapper from './Mapper';
 import Register from './Register';
-import Login from './Login';
 import Logout from './Logout';
 
 export default class Main extends Component {
@@ -33,7 +32,6 @@ export default class Main extends Component {
             <Route path='/mappers' component={Mappers} />
             <Route path='/mapper/:id' component={Mapper} />
             {loggedIn ? <Redirect from='/register' to='/' /> : <Route path='/register' component={Register} />}
-            {loggedIn ? <Redirect from='/login' to='/' /> : <Route path='/login' component={Login} />}
             {loggedIn ? <Route path='/logout' component={Logout} /> : <Redirect from='/logout' to='/' />}
           </Switch>
         )}
