@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
 const steam = require('steam-login');
@@ -5,11 +6,26 @@ const { check, validationResult } = require('express-validator/check');
 const bodyParser = require('body-parser');
 const knex = require('./db/knex');
 const path = require('path');
+const cors = require('cors');
+const fileUpload = require('express-fileupload');
+const { Storage } = require('@google-cloud/storage');
+
+const projectId = 'scmaprepo';
+
+const storage = new Storage({
+  projectId: projectId
+})
+
+const bucketName = 'scmaprepo-files'
 
 const app = express();
 
+app.use(cors());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(fileUpload());
 
 app.use(express.static('dist'));
 
@@ -19,11 +35,19 @@ app.use(session({
   resave: false,
 }));
 
-app.use(steam.middleware({
-  realm: 'http://localhost:8080/',
-  verify: 'http://localhost:8080/auth/steam/return',
-  apiKey: process.env.STEAM_API_KEY
-}))
+if(process.env.NODE_ENV === 'production') {
+  app.use(steam.middleware({
+    realm: 'https://scmaprepo.appspot.com/',
+    verify: 'https://scmaprepo.appspot.com/auth/steam/return',
+    apiKey: process.env.STEAM_API_KEY
+  }))
+} else {
+  app.use(steam.middleware({
+    realm: 'http://localhost:8080/',
+    verify: 'http://localhost:8080/auth/steam/return',
+    apiKey: process.env.STEAM_API_KEY
+  }))
+}
 
 function findUsername(username) {
   return knex.select('username')
@@ -250,6 +274,58 @@ app.put('/api/map/:id', function(req, res) {
       res.send({
         success: 'Successfully updated map'
       })
+    })
+})
+
+app.get('/api/map/:id/screenshots', function(req, res) {
+  storage.bucket(bucketName).getFiles({ prefix: `map/${req.params.id}/screenshots` }, function(err, screenshots) {
+    if(err) {
+      console.log(err)
+    }
+    
+    const allScreenshotUrls = []
+    screenshots.forEach(screenshot => {
+      console.log(screenshot.metadata.name)
+      allScreenshotUrls.push(`https://storage.googleapis.com/scmaprepo-files/${screenshot.metadata.name}`)
+    })
+
+    console.log(allScreenshotUrls)
+
+    res.send({screenshotUrls: allScreenshotUrls});
+  })
+})
+
+app.post('/api/map/:id/screenshots', function(req, res) {
+  knex.select('maps.id')
+    .from('maps')
+    .where('maps.id', req.params.id)
+    .first()
+    .then(function(map) {
+      if(map.id) {
+        let imageFile = req.files.file;
+        let imageFileName = `${Date.now().toString()}${req.files.file.name}`;
+        let imageFilePath = `${__dirname}/${imageFileName}`;
+
+        imageFile.mv(imageFilePath, function(err) {
+          if(err) {
+            return res.status(500).send(err);
+          }
+        })
+
+        storage.bucket(bucketName).upload(imageFilePath, {
+          destination: `/map/${map.id}/screenshots/${imageFileName}`,
+          gzip: true,
+        })
+        .then(file => {
+          fs.unlink(imageFilePath, (err) => {
+            if(err) {
+              console.log(err)
+            }
+          })
+
+          res.json({ screenshotUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/screenshots/${imageFileName}` })
+        })
+      }
     })
 })
 
