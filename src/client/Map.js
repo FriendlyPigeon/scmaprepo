@@ -14,6 +14,7 @@ export default class Map extends Component {
     this.state = {
       mapId: null,
       map: null,
+      thumbnailUrls: null,
       screenshotUrls: null,
       comments: null,
       error: null,
@@ -43,15 +44,15 @@ export default class Map extends Component {
         })
       })
     
-    fetch(`/api/map/${id}/screenshots`)
+    fetch(`/api/map/${id}/thumbnails`)
       .then(response => response.json())
       .then(response => {
         if(!response.error) { return response }
         else { throw response }
       })
-      .then(screenshots => {
+      .then(thumbnails => {
         this.setState({
-          screenshotUrls: screenshots.screenshotUrls
+          thumbnailUrls: thumbnails.thumbnailUrls,
         })
       })
       .catch(error => {
@@ -94,9 +95,11 @@ export default class Map extends Component {
       if(!response.error) { return response }
       else { throw response }
     })
-    .then(screenshot => {
+    .then(thumbnail => {
+      const newThumbnailUrls = this.state.thumbnailUrls.concat(thumbnail.thumbnailUrl)
+      console.log(newThumbnailUrls)
       this.setState({
-        screenshotUrls: screenshotUrls.append(screenshot.screenshotUrl)
+        thumbnailUrls: newThumbnailUrls
       })
     })
     .catch(error => {
@@ -107,7 +110,7 @@ export default class Map extends Component {
   }
 
   render() {
-    const { error, mapId, map, screenshotUrls, comments } = this.state;
+    const { error, mapId, map, thumbnailUrls, comments } = this.state;
     return(
       <Segment>
  
@@ -138,8 +141,8 @@ export default class Map extends Component {
             </Segment>
 
           <h3>Screenshots</h3>
-          {screenshotUrls && screenshotUrls.map((screenshotUrl, index) =>
-            <Image style={{ display: 'inline' }} size='small' key={index} src={screenshotUrl}></Image>
+          {thumbnailUrls && thumbnailUrls.map((thumbnailUrl, index) =>
+            <Image style={{ display: 'inline' }} key={index} src={thumbnailUrl}></Image>
           )}
           <form onSubmit={this.handleUploadScreenshot}>
             <input ref={(ref) => { this.uploadInput = ref; }} type="file" accept=".jpg,.png" />

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const jimp = require('jimp');
 const express = require('express');
 const session = require('express-session');
 const steam = require('steam-login');
@@ -25,7 +26,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(fileUpload());
+app.use(fileUpload({
+  limits: { fileSize: 5*1024*1024 },
+}));
 
 app.use(express.static('dist'));
 
@@ -277,6 +280,21 @@ app.put('/api/map/:id', function(req, res) {
     })
 })
 
+app.get('/api/map/:id/thumbnails', function(req, res) {
+  storage.bucket(bucketName).getFiles({ prefix: `map/${req.params.id}/thumbnails` }, function(err, thumbnails) {
+    if(err) {
+      console.log(err)
+    }
+    
+    const allThumbnailUrls = []
+    thumbnails.forEach(thumbnail => {
+      allThumbnailUrls.push(`https://storage.googleapis.com/scmaprepo-files/${thumbnail.metadata.name}`)
+    })
+
+    res.send({thumbnailUrls: allThumbnailUrls});
+  })
+})
+
 app.get('/api/map/:id/screenshots', function(req, res) {
   storage.bucket(bucketName).getFiles({ prefix: `map/${req.params.id}/screenshots` }, function(err, screenshots) {
     if(err) {
@@ -285,26 +303,33 @@ app.get('/api/map/:id/screenshots', function(req, res) {
     
     const allScreenshotUrls = []
     screenshots.forEach(screenshot => {
-      console.log(screenshot.metadata.name)
       allScreenshotUrls.push(`https://storage.googleapis.com/scmaprepo-files/${screenshot.metadata.name}`)
     })
-
-    console.log(allScreenshotUrls)
 
     res.send({screenshotUrls: allScreenshotUrls});
   })
 })
 
 app.post('/api/map/:id/screenshots', function(req, res) {
-  knex.select('maps.id')
+  // Only accept JPG or PNG images
+  if(['image/png', 'image/jpeg'].includes(req.files.file.mimetype) === false) {
+    res.status(400).send({ error: 'Uploaded file must be of type JPG or PNG' })
+  } else if(req.files.file.truncated) {
+    res.status(400).send({ error: 'File exceeds 5MB limit' })
+  } else {
+    knex.select('maps.id')
     .from('maps')
     .where('maps.id', req.params.id)
     .first()
     .then(function(map) {
       if(map.id) {
         let imageFile = req.files.file;
+        console.log(imageFile);
         let imageFileName = `${Date.now().toString()}${req.files.file.name}`;
         let imageFilePath = `${__dirname}/${imageFileName}`;
+        let thumbnailName = `${Date.now().toString()}${req.files.file.name}-thumbnail.jpg`
+        let thumbnailPath = `${__dirname}/${thumbnailName}`
+
 
         imageFile.mv(imageFilePath, function(err) {
           if(err) {
@@ -312,6 +337,18 @@ app.post('/api/map/:id/screenshots', function(req, res) {
           }
         })
 
+        jimp.read(imageFilePath, (err, image) => {
+          if(err) {
+            console.log(err)
+          }
+
+          image
+            .resize(160, jimp.AUTO)
+            .quality(60)
+            .write(thumbnailPath)
+        })
+
+        // Upload raw image
         storage.bucket(bucketName).upload(imageFilePath, {
           destination: `/map/${map.id}/screenshots/${imageFileName}`,
           gzip: true,
@@ -323,10 +360,24 @@ app.post('/api/map/:id/screenshots', function(req, res) {
             }
           })
 
-          res.json({ screenshotUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/screenshots/${imageFileName}` })
+          // Upload thumbnail
+          storage.bucket(bucketName).upload(thumbnailPath, {
+            destination: `/map/${map.id}/thumbnails/${thumbnailName}`,
+            gzip: true,
+          })
+          .then(file => {
+            fs.unlink(thumbnailPath, (err) => {
+              if(err) {
+                console.log(err)
+              }
+            })
+
+            res.json({ thumbnailUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/thumbnails/${thumbnailName}` })
+          })
         })
       }
-    })
+    }) 
+  }
 })
 
 function getComments(mapId) {
