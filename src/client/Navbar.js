@@ -46,7 +46,7 @@ const Navbar = () => (
     </Menu.Menu>
     :
     <Menu.Menu position='right'>
-      <a href='auth/steam'>
+      <a href='/auth/steam'>
         <img src={SteamLoginButton}></img>
       </a>
     </Menu.Menu>
