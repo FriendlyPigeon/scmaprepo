@@ -137,7 +137,7 @@ export default class Map extends Component {
 
           <h3>Description</h3>
             <Segment>
-              Test description
+              {map.description}
             </Segment>
 
           <h3>Screenshots</h3>

@@ -168,19 +168,19 @@ app.get('/api/maps', function(req, res) {
 app.get('/api/map/:id', function(req, res) {
   const mapId = req.params.id;
 
-  knex.select('maps.name',
+  knex.select('maps.name', 'maps.description',
       knex.raw('array_agg(mappers.name) as authors'),
       knex.raw('array_agg(authors.mapper_id) as mapper_ids'))
     .from('maps')
     .innerJoin('authors', 'maps.id', 'authors.map_id')
     .innerJoin('mappers', 'authors.mapper_id', 'mappers.id')
     .where('maps.id', mapId)
-    .groupBy('maps.name')
+    .groupBy('maps.name', 'maps.description')
     .first()
     .then(function(map) {
       // If there are no authors of a map, just return the map name
       if(map === undefined) {
-        knex.select('maps.name').from('maps').where('maps.id', mapId).first()
+        knex.select('maps.name', 'maps.description').from('maps').where('maps.id', mapId).first()
         .then(function(map) {
           res.send(map)
         })
@@ -211,6 +211,7 @@ app.post('/api/map', function(req, res) {
     return transaction
       .insert({
         name: req.body.name,
+        description: req.body.description,
       })
       .into('maps')
       .returning('id')
@@ -239,43 +240,48 @@ app.post('/api/map', function(req, res) {
 })
 
 app.put('/api/map/:id', function(req, res) {
-  knex('authors')
-    .select('authors.mapper_id')
-    .where('authors.map_id', req.params.id)
-    .then(function(current_authors_object) {
-      const current_authors = current_authors_object.map(author =>
-        author.mapper_id
-      )
-      console.log(current_authors)
-      req.body.authors.map(author => {
-        if(current_authors.includes(author) === false) {
-          console.log(author)
-          knex('authors')
-            .insert({
-              mapper_id: author,
-              map_id: req.params.id
-            })
-            .then(function(id) {
-              console.log(id)
-            })
-        } 
-      })
-      current_authors.map(author => {
-        if(req.body.authors.includes(author) === false) {
-          knex('authors')
-            .del()
-            .where({
-              mapper_id: author,
-              map_id: req.params.id
-            })
-            .then(function(id) {
-              console.log(id)
-            })
-        }
-      })
-
-      res.send({
-        success: 'Successfully updated map'
+  knex
+    .update({
+      name: req.body.name,
+      description: req.body.description,
+    })
+    .into('maps')
+    .where('maps.id', req.params.id)
+    .then(() => {
+      knex('authors')
+      .select('authors.mapper_id')
+      .where('authors.map_id', req.params.id)
+      .then(function(current_authors_object) {
+        const current_authors = current_authors_object.map(author =>
+          author.mapper_id
+        )
+        req.body.authors.map(author => {
+          if(current_authors.includes(author) === false) {
+            knex('authors')
+              .insert({
+                mapper_id: author,
+                map_id: req.params.id
+              })
+              .then(() => {
+              })
+          } 
+        })
+        current_authors.map(author => {
+          if(req.body.authors.includes(author) === false) {
+            knex('authors')
+              .del()
+              .where({
+                mapper_id: author,
+                map_id: req.params.id
+              })
+              .then(() => {
+              })
+          }
+        })
+  
+        res.send({
+          success: 'Successfully updated map'
+        })
       })
     })
 })
