@@ -91,7 +91,6 @@ export default class MapEdit extends Component {
   }
 
   handleMapSubmit() {
-    console.log('reached');
     const { id } = this.props.match.params;
     const { map, newMappers } = this.state;
 

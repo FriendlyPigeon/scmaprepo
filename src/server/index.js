@@ -378,7 +378,23 @@ app.post('/api/map/:id/screenshots', function(req, res) {
               }
             })
 
-            res.json({ thumbnailUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/thumbnails/${thumbnailName}` })
+            res.json({ 
+              thumbnailUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/thumbnails/${thumbnailName}`,
+              screenshotUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/screenshots/${imageFileName}`,
+            })
+          })
+        })
+        .catch(error => {
+          console.log(error)
+          fs.unlink(imageFilePath, (error) => {
+            if(error) {
+              console.log(error);
+            }
+          })
+          fs.unlink(thumbnailPath, (error) => {
+            if(error) {
+              console.log(error);
+            }
           })
         })
       }

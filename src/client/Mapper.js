@@ -43,10 +43,14 @@ export default class Mapper extends Component {
         {mapper ?
           <div>
             <h2>{mapper.name}</h2>
+            <Link 
+              style={{ float: 'right' }} 
+              to={`/mapper/${this.props.match.params.id}/edit`}
+            >Edit</Link>
             <Divider />
             <h2>Maps</h2>
             <List>
-            {mapper.maps.map((map, id) =>
+            {mapper.maps && mapper.maps.map((map, id) =>
               <List.Item>
                 <List.Content>
                   <Link to={`/map/${mapper.map_ids[id]}`}>{map}</Link>

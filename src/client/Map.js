@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Button, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
+import { Segment, Button, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
 import MapComments from './MapComments';
 import MapScreenshots from './MapScreenshots';
@@ -16,10 +16,14 @@ export default class Map extends Component {
       map: null,
       thumbnailUrls: null,
       screenshotUrls: null,
+      screenshotOpen: false,
+      screenshotOpenUrl: null,
       comments: null,
       error: null,
     }
 
+    this.handleScreenshotOpen = this.handleScreenshotOpen.bind(this);
+    this.handleScreenshotClose = this.handleScreenshotClose.bind(this);
     this.handleUploadScreenshot = this.handleUploadScreenshot.bind(this);
   }
 
@@ -61,6 +65,23 @@ export default class Map extends Component {
         })
       })
 
+    fetch(`/api/map/${id}/screenshots`)
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(screenshots => {
+        this.setState({
+          screenshotUrls: screenshots.screenshotUrls,
+        })
+      })
+      .catch(error => {
+        this.setState({
+          error: error
+        })
+      })
+
     fetch(`/api/map/${id}/comments`)
       .then(response => response.json())
       .then(response => {
@@ -79,6 +100,22 @@ export default class Map extends Component {
       })
   }
 
+  handleScreenshotOpen(index) {
+    console.log(index)
+    const { screenshotUrls } = this.state;
+
+    this.setState({
+      screenshotOpen: true,
+      screenshotOpenUrl: screenshotUrls[index],
+    })
+  }
+
+  handleScreenshotClose() {
+    this.setState({
+      screenshotOpen: false,
+    })
+  }
+
   handleUploadScreenshot(event) {
     event.preventDefault();
     const { id } = this.props.match.params;
@@ -95,11 +132,14 @@ export default class Map extends Component {
       if(!response.error) { return response }
       else { throw response }
     })
-    .then(thumbnail => {
-      const newThumbnailUrls = this.state.thumbnailUrls.concat(thumbnail.thumbnailUrl)
+    .then(images => {
+      const newThumbnailUrls = this.state.thumbnailUrls.concat(images.thumbnailUrl)
       console.log(newThumbnailUrls)
+      const newScreenshotUrls = this.state.screenshotUrls.concat(images.screenshotUrl)
+      console.log(newScreenshotUrls)
       this.setState({
-        thumbnailUrls: newThumbnailUrls
+        thumbnailUrls: newThumbnailUrls,
+        screenshotUrls: newScreenshotUrls,
       })
     })
     .catch(error => {
@@ -110,7 +150,7 @@ export default class Map extends Component {
   }
 
   render() {
-    const { error, mapId, map, thumbnailUrls, comments } = this.state;
+    const { error, mapId, map, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
     return(
       <Segment>
  
@@ -142,8 +182,17 @@ export default class Map extends Component {
 
           <h3>Screenshots</h3>
           {thumbnailUrls && thumbnailUrls.map((thumbnailUrl, index) =>
-            <Image style={{ display: 'inline' }} key={index} src={thumbnailUrl}></Image>
+            <a onClick={() => this.handleScreenshotOpen(index)}>
+              <Image style={{ display: 'inline' }} key={index} src={thumbnailUrl}></Image>
+            </a>
           )}
+
+          {screenshotUrls && screenshotOpenUrl &&
+            <Dimmer active={screenshotOpen} onClickOutside={this.handleScreenshotClose} page>
+              <Image src={screenshotOpenUrl}></Image>
+            </Dimmer>
+          }
+
           <form onSubmit={this.handleUploadScreenshot}>
             <input ref={(ref) => { this.uploadInput = ref; }} type="file" accept=".jpg,.png" />
             <Button>Upload</Button>
