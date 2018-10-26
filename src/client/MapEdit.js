@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link, Redirect } from 'react-router-dom';
 
-import { Segment, Loader, Divider, Message, List, Dropdown, Button } from 'semantic-ui-react';
+import { Segment, Loader, Divider, Input, Message, List, Dropdown, Button } from 'semantic-ui-react';
 
 export default class MapEdit extends Component {
   constructor(props) {
@@ -12,24 +12,13 @@ export default class MapEdit extends Component {
       successfulSubmit: false,
       map: null,
       allMappers: null,
-      newMappers: [],
       error: null,
     }
 
     this.handleMapperDropdownChange = this.handleMapperDropdownChange.bind(this);
-    this.handleFieldChange = this.handleFieldChange.bind(this);
+    this.handleMapNameChange = this.handleMapNameChange.bind(this);
+    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleMapSubmit = this.handleMapSubmit.bind(this);
-  }
-
-  handleMapperDropdownChange(event, data) {
-    console.log(data.value, data.text);
-    this.setState({
-      newMappers: data.value,
-    })
-  }
-
-  handleFieldChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
   }
 
   componentDidMount() {
@@ -63,7 +52,6 @@ export default class MapEdit extends Component {
             console.log('reached mappers')
             this.setState({
               allMappers: mappers,
-              newMappers: this.state.map.mapper_ids,
             })
           })
           .catch(error => {
@@ -74,9 +62,38 @@ export default class MapEdit extends Component {
       )
   }
 
+  handleMapperDropdownChange(event, data) {
+    let mapWithNewMappers = Object.assign({}, this.state.map);
+    mapWithNewMappers.mapper_ids = data.value;
+    
+    this.setState({
+      map: mapWithNewMappers,
+    })
+  }
+
+  handleMapNameChange(event) {
+    let mapWithNewName = Object.assign({}, this.state.map);
+    mapWithNewName.name = event.target.value;
+
+    this.setState({
+      map: mapWithNewName,
+    })
+  }
+
+  handleDescriptionChange(event) {
+    let mapWithNewDescription = Object.assign({}, this.state.map);
+    mapWithNewDescription.description = event.target.value;
+    console.log(mapWithNewDescription);
+
+    this.setState({
+      map: mapWithNewDescription,
+    })
+  }
+
   handleMapSubmit() {
+    console.log('reached');
     const { id } = this.props.match.params;
-    const { newMappers } = this.state;
+    const { map, newMappers } = this.state;
 
     fetch(`/api/map/${id}`, {
       method: 'PUT',
@@ -85,7 +102,9 @@ export default class MapEdit extends Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        authors: newMappers,
+        name: map.name,
+        description: map.description,
+        authors: map.mapper_ids || [],
       })
     })
     .then(response => response.json())
@@ -113,7 +132,11 @@ export default class MapEdit extends Component {
         {successfulSubmit && <Redirect to={`/map/${this.props.match.params.id}`} />}
         {map && allMappers ?
           <div>
-            <h2>{map.name}</h2>
+            <Input
+              onChange={this.handleMapNameChange} 
+              placeholder='Map name' 
+              value={map.name} 
+            />
             <Divider />
             <h3>Authors</h3>
             <List>
@@ -121,7 +144,7 @@ export default class MapEdit extends Component {
                 <List.Content>
                   <Dropdown
                     multiple
-                    value={newMappers} 
+                    value={map.mapper_ids} 
                     onChange={this.handleMapperDropdownChange} 
                     placeholder='Mapper' 
                     search 
@@ -133,7 +156,11 @@ export default class MapEdit extends Component {
             </List>
             <h3>Description</h3>
               <Segment>
-                Test description
+                <Input
+                  onChange={this.handleDescriptionChange}
+                  placeholder='Map description' 
+                  value={map.description} 
+                />
               </Segment>
             <h3>Screenshots</h3>
             <a style={{ display: 'block' }}>
