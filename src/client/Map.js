@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Button, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
+import { Segment, Button, Input, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
 import MapComments from './MapComments';
 import MapScreenshots from './MapScreenshots';
@@ -14,6 +14,7 @@ export default class Map extends Component {
     this.state = {
       mapId: null,
       map: null,
+      fileUrls: null,
       thumbnailUrls: null,
       screenshotUrls: null,
       screenshotOpen: false,
@@ -24,6 +25,7 @@ export default class Map extends Component {
 
     this.handleScreenshotOpen = this.handleScreenshotOpen.bind(this);
     this.handleScreenshotClose = this.handleScreenshotClose.bind(this);
+    this.handleUploadFile = this.handleUploadFile.bind(this);
     this.handleUploadScreenshot = this.handleUploadScreenshot.bind(this);
   }
 
@@ -98,6 +100,23 @@ export default class Map extends Component {
           error: error.error,
         })
       })
+
+    fetch(`/api/map/${id}/files`)
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(files => {
+        this.setState({
+          fileUrls: files.fileUrls
+        })
+      })
+      .catch(error => {
+        this.setState({
+          error: error.error,
+        })
+      })
   }
 
   handleScreenshotOpen(index) {
@@ -116,12 +135,42 @@ export default class Map extends Component {
     })
   }
 
+  handleUploadFile(event) {
+    event.preventDefault();
+    const { id } = this.props.match.params;
+
+    const data = new FormData();
+    data.append('file', this.uploadFileInput.files[0]);
+
+    fetch(`/api/map/${id}/files`, {
+      method: 'POST',
+      body: data
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(!response.error) { return response }
+      else { throw response }
+    })
+    .then(file => {
+      const newFileUrls = this.state.fileUrls.concat(file.fileUrl);
+
+      this.setState({
+        fileUrls: newFileUrls,
+      })
+    })
+    .catch(error => {
+      this.setState({
+        error: error.error,
+      })
+    })
+  }
+
   handleUploadScreenshot(event) {
     event.preventDefault();
     const { id } = this.props.match.params;
 
     const data = new FormData();
-    data.append('file', this.uploadInput.files[0]);
+    data.append('file', this.uploadScreenshotInput.files[0]);
     
     fetch(`/api/map/${id}/screenshots`, {
       method: 'POST',
@@ -150,7 +199,7 @@ export default class Map extends Component {
   }
 
   render() {
-    const { error, mapId, map, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
+    const { error, mapId, map, fileUrls, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
     return(
       <Segment>
  
@@ -163,6 +212,22 @@ export default class Map extends Component {
             to={`/map/${mapId}/edit`}
           >Edit</Link>
           <Divider />
+
+          <h3>Map files</h3>
+          <List>
+          {fileUrls && fileUrls.map((fileUrl, index) => 
+            <List.Item>
+              <a href={fileUrl}>
+                {fileUrl}
+              </a>
+            </List.Item>
+          )}
+          </List>
+
+          <form onSubmit={this.handleUploadFile}>
+            <input ref={(ref) => { this.uploadFileInput = ref; }} type="file" accept=".7z,.zip,.rar" />
+            <Button>Upload</Button>
+          </form>
 
           <h3>Authors</h3>
           <List>
@@ -194,7 +259,7 @@ export default class Map extends Component {
           }
 
           <form onSubmit={this.handleUploadScreenshot}>
-            <input ref={(ref) => { this.uploadInput = ref; }} type="file" accept=".jpg,.png" />
+            <input ref={(ref) => { this.uploadScreenshotInput = ref; }} type="file" accept=".jpg,.png" />
             <Button>Upload</Button>
           </form>
 
