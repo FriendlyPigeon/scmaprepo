@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(fileUpload({
-  limits: { fileSize: 5*1024*1024 },
+  limits: { fileSize: 200*1024*1024 },
 }));
 
 app.use(express.static('dist'));
@@ -286,6 +286,21 @@ app.put('/api/map/:id', function(req, res) {
     })
 })
 
+app.get('/api/map/:id/files', function(req, res) {
+  storage.bucket(bucketName).getFiles({ prefix: `map/${req.params.id}/files` }, function(err, files) {
+    if(err) {
+      console.log(err)
+    }
+
+    const allFileUrls = []
+    files.forEach(file => {
+      allFileUrls.push(`https://storage.googleapis.com/scmaprepo-files/${file.metadata.name}`)
+    })
+
+    res.send({ fileUrls: allFileUrls });
+  })
+})
+
 app.get('/api/map/:id/thumbnails', function(req, res) {
   storage.bucket(bucketName).getFiles({ prefix: `map/${req.params.id}/thumbnails` }, function(err, thumbnails) {
     if(err) {
@@ -316,11 +331,67 @@ app.get('/api/map/:id/screenshots', function(req, res) {
   })
 })
 
+app.post('/api/map/:id/files', function(req, res) {
+  if(['application/x-7z-compressed',
+      'application/x-rar-compressed',
+      'application/x-zip-compressed']
+      .includes(req.files.file.mimetype) === false) 
+    {
+      res.status(400).send({ error: 'Uploaded file must be of type 7Z, RAR, or ZIP' })
+    } else if(req.files.file.truncated) {
+      res.status(400).send({ error: 'File exceeds 5MB limit' })
+    } else {
+      knex.select('maps.id')
+        .from('maps')
+        .where('maps.id', req.params.id)
+        .first()
+        .then(function(map) {
+          if(map.id) {
+            let uploadedFile = req.files.file;
+            console.log(uploadedFile);
+            let uploadedFileName = `${Date.now().toString()}_${uploadedFile.name}`;
+            let uploadedFilePath = `${__dirname}/${uploadedFileName}`;
+
+            uploadedFile.mv(uploadedFilePath, function(err) {
+              if(err) {
+                return res.status(500).send(err);
+              }
+            })
+
+            storage.bucket(bucketName).upload(uploadedFilePath, {
+              destination: `/map/${map.id}/files/${uploadedFileName}`,
+              gzip: true,
+            })
+            .then(file => {
+              fs.unlink(uploadedFilePath, (err) => {
+                if(err) {
+                  console.log(err)
+                }
+              })
+  
+              res.json({ 
+                fileUrl: `https://storage.googleapis.com/scmaprepo-files/map/${map.id}/files/${uploadedFileName}`
+              })
+            })
+            .catch(error => {
+              console.log(error)
+              fs.unlink(uploadedFilePath, (error) => {
+                if(error) {
+                  console.log(error);
+                }
+              })
+            })
+          }
+        })
+    }
+})
+
 app.post('/api/map/:id/screenshots', function(req, res) {
+  console.log(req.files.file.data.length)
   // Only accept JPG or PNG images
   if(['image/png', 'image/jpeg'].includes(req.files.file.mimetype) === false) {
     res.status(400).send({ error: 'Uploaded file must be of type JPG or PNG' })
-  } else if(req.files.file.truncated) {
+  } else if((req.files.file.data.length/(1024*1024)) > 5) {
     res.status(400).send({ error: 'File exceeds 5MB limit' })
   } else {
     knex.select('maps.id')
@@ -415,16 +486,21 @@ function getComments(mapId) {
   })
 }
 
+// Take a flat list of comments and nest replies under their parent
 function formatToNestedComments(comments) {
+  // Add replies field to each comment
   var nestedComments = comments.map(comment => {
     comment.replies = [];
     return comment;
   })
 
   nestedComments.map((replyComment, index) => {
+    // If comment is a reply...
     if(replyComment.reply_to_id) {
       nestedComments.map(parentComment => {
+        // ...then find its corresponding parent comment...
         if(parentComment.comment_id === replyComment.reply_to_id) {
+          // ...and nest the reply comment under the parent
           parentComment.replies.push(replyComment);
         }
       })
@@ -564,7 +640,17 @@ app.get('/api/mapper/:id', function(req, res) {
     .groupBy('mappers.name')
     .first()
     .then(function(mapper) {
-      res.send(mapper);
+      if(mapper === undefined) {
+        knex.select('mappers.name')
+          .from('mappers')
+          .where('mappers.id', mapperId)
+          .first()
+          .then(function(mapper) {
+            res.send(mapper);
+          })
+      } else {
+        res.send(mapper);
+      }
     })
 })
 
