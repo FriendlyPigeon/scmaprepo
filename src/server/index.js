@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fetch = require('node-fetch');
 const jimp = require('jimp');
 const express = require('express');
 const session = require('express-session');
@@ -401,7 +402,6 @@ app.post('/api/map/:id/screenshots', function(req, res) {
     .then(function(map) {
       if(map.id) {
         let imageFile = req.files.file;
-        console.log(imageFile);
         let imageFileName = `${Date.now().toString()}${req.files.file.name}`;
         let imageFilePath = `${__dirname}/${imageFileName}`;
         let thumbnailName = `${Date.now().toString()}${req.files.file.name}-thumbnail.jpg`
@@ -630,18 +630,18 @@ app.get('/api/mappers', function(req, res) {
 app.get('/api/mapper/:id', function(req, res) {
   const mapperId = req.params.id;
 
-  knex.select('mappers.name', 
+  knex.select('mappers.name', 'mappers.steam_id', 
       knex.raw('array_agg(maps.name) as maps'),
       knex.raw('array_agg(maps.id) as map_ids'))
     .from('mappers')
     .innerJoin('authors', 'mappers.id', 'authors.mapper_id')
     .innerJoin('maps', 'maps.id', 'authors.map_id')
     .where('mappers.id', mapperId)
-    .groupBy('mappers.name')
+    .groupBy('mappers.name', 'mappers.steam_id')
     .first()
     .then(function(mapper) {
       if(mapper === undefined) {
-        knex.select('mappers.name')
+        knex.select('mappers.name', 'mappers.steam_id')
           .from('mappers')
           .where('mappers.id', mapperId)
           .first()
@@ -650,6 +650,30 @@ app.get('/api/mapper/:id', function(req, res) {
           })
       } else {
         res.send(mapper);
+      }
+    })
+})
+
+app.post('/api/mapper', function(req, res) {
+  if(req.body.name === '') {
+    return res.status(400).send({ error: 'Name can not be blank' })
+  }
+  fetch(`https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${process.env.STEAM_API_KEY}&vanityurl=${req.body.vanityurl}`)
+    .then(res => res.json())
+    .then(json => {
+      if(json.response.success = 1) {
+        knex('mappers')
+          .insert({
+            name: req.body.name,
+            steam_id: json.response.steamid,
+          })
+          .then(() => {
+            return res.send({
+              success: 'Successful mapper submit',
+            })
+          })
+      } else {
+        return res.status(400).send({ error: 'Invalid steam profile' })
       }
     })
 })

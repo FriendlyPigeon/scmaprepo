@@ -8,6 +8,7 @@ import MapNew from './MapNew';
 import Map from './Map';
 import MapEdit from './MapEdit';
 import Mappers from './Mappers';
+import MapperNew from './MapperNew';
 import Mapper from './Mapper';
 import MapperEdit from './MapperEdit';
 import Register from './Register';
@@ -31,6 +32,7 @@ export default class Main extends Component {
             <Route path='/map/:id/edit' component={MapEdit} />
             <Route path='/map/:id' component={Map} />
             <Route path='/mappers' component={Mappers} />
+            <Route path='/mapper/new' component={MapperNew} />
             <Route path='/mapper/:id/edit' component={MapperEdit} />
             <Route path='/mapper/:id' component={Mapper} />
             {loggedIn ? <Redirect from='/register' to='/' /> : <Route path='/register' component={Register} />}

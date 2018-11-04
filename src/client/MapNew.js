@@ -64,7 +64,6 @@ export default class MapNew extends Component {
       else { throw response }
     })
     .then(response => {
-      console.log(response)
       this.setState({
         successfulSubmit: true,
       })  
@@ -88,7 +87,7 @@ export default class MapNew extends Component {
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
-        {successfulSubmit && <Redirect to={'/maps'} />}
+        {successfulSubmit && <Redirect to={'/mappers'} />}
         <div>
           <h3>Map name</h3>
           <Input
