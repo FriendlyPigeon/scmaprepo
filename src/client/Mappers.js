@@ -38,6 +38,10 @@ export default class Mappers extends Component {
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
+        <h3>
+          <Link to='/mapper/new'>New mapper</Link>
+        </h3>
+        <Divider section />
         {mappers ?
         mappers.map((mapper) =>
           <h3 key={mapper.id}>
