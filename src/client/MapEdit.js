@@ -41,25 +41,41 @@ export default class MapEdit extends Component {
           error: error.error,
         })
       })
-      .then(() =>
-        fetch('/api/mappers/dropdown')
-          .then(response => response.json())
-          .then(response => {
-            if(!response.error) { return response }
-            else { throw response }
-          })
-          .then(mappers => {
-            console.log('reached mappers')
-            this.setState({
-              allMappers: mappers,
-            })
-          })
-          .catch(error => {
-            this.setState({
-              error: error,
-            })
-          })
-      )
+    
+    fetch('/api/mappers/dropdown')
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(mappers => {
+        console.log('reached mappers')
+        this.setState({
+          allMappers: mappers,
+        })
+      })
+      .catch(error => {
+        this.setState({
+          error: error,
+        })
+      })
+
+    fetch('/api/tags/dropdown')
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(tags => {
+        this.setState({
+          allTags: tags,
+        })
+      })
+      .catch(error => {
+        this.setState({
+          error: error,
+        })
+      })
   }
 
   handleMapperDropdownChange(event, data) {
@@ -138,21 +154,22 @@ export default class MapEdit extends Component {
             />
             <Divider />
             <h3>Authors</h3>
-            <List>
-              <List.Item>
-                <List.Content>
-                  <Dropdown
-                    multiple
-                    value={map.mapper_ids} 
-                    onChange={this.handleMapperDropdownChange} 
-                    placeholder='Mapper' 
-                    search 
-                    selection 
-                    options={allMappers} 
-                  />
-                </List.Content>
-              </List.Item>
-            </List>
+              <Dropdown
+                multiple
+                value={map.mapper_ids} 
+                onChange={this.handleMapperDropdownChange} 
+                placeholder='Mapper' 
+                search 
+                selection 
+                options={allMappers} 
+              />
+            <h3>Tags</h3>
+              <Dropdown
+                multiple
+                placeholder='Tag'
+                search
+                selection
+              />
             <h3>Description</h3>
               <Segment>
                 <Input

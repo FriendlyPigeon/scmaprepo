@@ -27,6 +27,14 @@ const Navbar = () => (
       Mappers
     </Menu.Item>
 
+    <Menu.Item
+      as={Link}
+      to='/tags'
+      name='tags'
+    >
+      Tags
+    </Menu.Item>
+
     {loggedIn ?
     <Menu.Menu position='right'>
       <Menu.Item
