@@ -11,6 +11,7 @@ import Mappers from './Mappers';
 import MapperNew from './MapperNew';
 import Mapper from './Mapper';
 import MapperEdit from './MapperEdit';
+import Tags from './Tags';
 import Register from './Register';
 import Logout from './Logout';
 
@@ -35,6 +36,7 @@ export default class Main extends Component {
             <Route path='/mapper/new' component={MapperNew} />
             <Route path='/mapper/:id/edit' component={MapperEdit} />
             <Route path='/mapper/:id' component={Mapper} />
+            <Route path='/tags' component={Tags} />
             {loggedIn ? <Redirect from='/register' to='/' /> : <Route path='/register' component={Register} />}
             {loggedIn ? <Route path='/logout' component={Logout} /> : <Redirect from='/logout' to='/' />}
           </Switch>

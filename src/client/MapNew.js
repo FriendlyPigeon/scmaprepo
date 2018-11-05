@@ -87,7 +87,7 @@ export default class MapNew extends Component {
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
-        {successfulSubmit && <Redirect to={'/mappers'} />}
+        {successfulSubmit && <Redirect to={'/maps'} />}
         <div>
           <h3>Map name</h3>
           <Input

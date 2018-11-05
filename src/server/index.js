@@ -47,8 +47,8 @@ if(process.env.NODE_ENV === 'production') {
   }))
 } else {
   app.use(steam.middleware({
-    realm: 'http://localhost:8080/',
-    verify: 'http://localhost:8080/auth/steam/return',
+    realm: 'http://localhost:3000/',
+    verify: 'http://localhost:3000/auth/steam/return',
     apiKey: process.env.STEAM_API_KEY
   }))
 }
@@ -145,7 +145,14 @@ app.get('/auth/steam/return',
         if(steam_id) {
           res.redirect('/')
         } else {
-          res.redirect('/register')
+          knex('users')
+          .insert({
+            username: req.user.username,
+            steam_id: req.user.steamid,
+          })
+          .then(() =>
+            res.redirect('/')
+          )
         }
       })
   }
@@ -477,7 +484,7 @@ function getComments(mapId) {
   return new Promise(function(resolve, reject) {
     knex.select('users.id as user_id', 'users.username', 'map_comments.comment', 'map_comments.id as comment_id', 'map_comments.reply_to_id')
       .from('map_comments')
-      .leftOuterJoin('users', 'map_comments.user_id', 'users.id')
+      .leftOuterJoin('users', 'map_comments.steam_id', 'users.steam_id')
       .innerJoin('maps', 'map_comments.map_id', 'maps.id')
       .where('maps.id', mapId)
       .then(function(comments) {
@@ -527,7 +534,7 @@ app.post('/api/map/:id/comments', function(req, res) {
   const replyToId = req.body.reply_to_id;
 
   // Make sure user is logged in
-  if(req.session.userId === undefined) {
+  if(req.user === undefined) {
     res.status(401).json({ error: 'You must be logged in to post a comment' });
     res.send();
   }
@@ -543,7 +550,7 @@ app.post('/api/map/:id/comments', function(req, res) {
           knex('map_comments')
             .insert({
               comment: req.body.comment,
-              user_id: req.session.userId,
+              steam_id: req.user.steamid,
               map_id: map.id,
               reply_to_id: null
             })
@@ -595,12 +602,12 @@ app.delete('/api/map/:id/comments', function(req, res) {
     res.status(401).json({ error: 'You must be logged in as this user to delete this comment' });
     res.send();
   } else {
-    knex.select('map_comments.id', 'map_comments.user_id')
+    knex.select('map_comments.id', 'map_comments.steam_id')
     .from('map_comments')
     .where('map_comments.id', req.body.comment_id)
     .first()
     .then(function(comment) {
-      if(comment.user_id === req.session.userId) {
+      if(comment.steam_id === req.user.steamid) {
         knex('map_comments')
           .where('map_comments.id', comment.id)
           .update({
@@ -675,6 +682,14 @@ app.post('/api/mapper', function(req, res) {
       } else {
         return res.status(400).send({ error: 'Invalid steam profile' })
       }
+    })
+})
+
+app.get('/api/tags', function(req, res) {
+  knex('tags')
+    .select('tags.id', 'tags.name')
+    .then(tags => {
+      res.send(tags)
     })
 })
 
