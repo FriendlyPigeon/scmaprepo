@@ -177,24 +177,20 @@ app.get('/api/map/:id', function(req, res) {
   const mapId = req.params.id;
 
   knex.select('maps.name', 'maps.description',
-      knex.raw('array_agg(mappers.name) as authors'),
-      knex.raw('array_agg(authors.mapper_id) as mapper_ids'))
+      knex.raw('array_agg(distinct mappers.name) as authors'),
+      knex.raw('array_agg(distinct authors.mapper_id) as mapper_ids'),
+      knex.raw('array_agg(distinct tags.name) as tags'),
+      knex.raw('array_agg(distinct map_tags.tag_id) as tag_ids'))
     .from('maps')
-    .innerJoin('authors', 'maps.id', 'authors.map_id')
-    .innerJoin('mappers', 'authors.mapper_id', 'mappers.id')
+    .leftJoin('authors', 'maps.id', 'authors.map_id')
+    .leftJoin('mappers', 'authors.mapper_id', 'mappers.id')
+    .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
+    .leftJoin('tags', 'map_tags.tag_id', 'tags.id')
     .where('maps.id', mapId)
     .groupBy('maps.name', 'maps.description')
     .first()
     .then(function(map) {
-      // If there are no authors of a map, just return the map name
-      if(map === undefined) {
-        knex.select('maps.name', 'maps.description').from('maps').where('maps.id', mapId).first()
-        .then(function(map) {
-          res.send(map)
-        })
-      } else {
-        res.send(map);
-      }
+      res.send(map);
     })
 })
 
@@ -203,6 +199,14 @@ app.get('/api/mappers/dropdown', function(req, res) {
     .from('mappers')
     .then(function(mappers) {
       res.send(mappers);
+    })
+})
+
+app.get('/api/tags/dropdown', function(req, res) {
+  knex.select('tags.id as key', 'tags.id as value', 'tags.name as text')
+    .from('tags')
+    .then(function(tags) {
+      res.send(tags);
     })
 })
 
@@ -263,19 +267,22 @@ app.put('/api/map/:id', function(req, res) {
         const current_authors = current_authors_object.map(author =>
           author.mapper_id
         )
-        req.body.authors.map(author => {
-          if(current_authors.includes(author) === false) {
+        console.log(req.body.authors)
+        req.body.authors && req.body.authors.map(author => {
+          if(author !== null && current_authors.includes(author) === false) {
             knex('authors')
               .insert({
                 mapper_id: author,
                 map_id: req.params.id
               })
+              // Why is this needed?
               .then(() => {
+
               })
           } 
         })
-        current_authors.map(author => {
-          if(req.body.authors.includes(author) === false) {
+        current_authors && current_authors.map(author => {
+          if(author !== null && req.body.authors.includes(author) === false) {
             knex('authors')
               .del()
               .where({
@@ -283,13 +290,50 @@ app.put('/api/map/:id', function(req, res) {
                 map_id: req.params.id
               })
               .then(() => {
+                
               })
           }
         })
-  
-        res.send({
-          success: 'Successfully updated map'
+      })
+    })
+    .then(() => {
+      knex('map_tags')
+        .select('map_tags.tag_id')
+        .where('map_tags.map_id', req.params.id)
+        .then(function(current_tags_object) {
+          const current_tags = current_tags_object.map(tag =>
+            tag.tag_id
+          )
+          req.body.tags && req.body.tags.map(tag => {
+            if(tag !== null && current_tags.includes(tag) === false) {
+              knex('map_tags')
+                .insert({
+                  tag_id: tag,
+                  map_id: req.params.id
+                })
+                .then(() => {
+
+                })
+            }
+          })
+          current_tags && current_tags.map(tag => {
+            if(tag !== null && req.body.tags.includes(tag) === false) {
+              knex('map_tags')
+                .del()
+                .where({
+                  tag_id: tag,
+                  map_id: req.params.id
+                })
+                .then(() => {
+
+                })
+            }
+          })
         })
+    })
+    .then(() => {
+      res.send({
+        success: 'Successfully updated map'
       })
     })
 })
@@ -690,6 +734,21 @@ app.get('/api/tags', function(req, res) {
     .select('tags.id', 'tags.name')
     .then(tags => {
       res.send(tags)
+    })
+})
+
+app.post('/api/tag', function(req, res) {
+  if(req.body.name === '') {
+    return res.status(400).send({ error: 'Name can not be blank' })
+  }
+  knex('tags')
+    .insert({
+      name: req.body.name,
+    })
+    .then(() => {
+      return res.send({
+        success: 'Successful tag submit'
+      })
     })
 })
 

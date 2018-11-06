@@ -45,7 +45,7 @@ export default class Tags extends Component {
         {tags ?
         tags.map((tag) =>
           <h3 key={tag.id}>
-            <Link to={`/maps/?tag=${tag.name}`}>{tag.name}</Link>
+            <Link to={`/maps?tag=${tag.name}`}>{tag.name}</Link>
             <Divider section />
           </h3>) 
         : <Loader>Loading maps</Loader>}

@@ -4,37 +4,35 @@ import { Redirect } from 'react-router-dom';
 
 import { Segment, Input, Divider, Message, Button } from 'semantic-ui-react';
 
-export default class MapperNew extends Component {
+export default class TagNew extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       error: null,
       successfulSubmit: false,
-      mapperName: '',
-      steamUrlName: '',
+      tagName: '',
     }
 
     this.handleFieldChange = this.handleFieldChange.bind(this);
-    this.handleMapperSubmit = this.handleMapperSubmit.bind(this);
+    this.handleTagSubmit = this.handleTagSubmit.bind(this);
   }
 
   handleFieldChange(event) {
     this.setState({ [event.target.name]: event.target.value });
   }
+  
+  handleTagSubmit() {
+    const { tagName } = this.state;
 
-  handleMapperSubmit() {
-    const { mapperName, steamUrlName } = this.state;
-
-    fetch('/api/mapper', {
+    fetch('/api/tag', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: mapperName,
-        vanityurl: steamUrlName,
+        name: tagName,
       })
     })
     .then(response => response.json())
@@ -53,37 +51,22 @@ export default class MapperNew extends Component {
       })
     })
   }
-
+  
   render() {
-    const { error, successfulSubmit, mapperName, steamUrlName } = this.state;
+    const { error, successfulSubmit, tagName } = this.state;
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
-        {successfulSubmit && <Redirect to={'/mappers'} />}
+        {successfulSubmit && <Redirect to={'/tags'} />}
         <div>
-          <h3>Mapper name</h3>
+          <h3>Tag name</h3>
           <Input
-            name='mapperName'
-            value={mapperName}
+            name='tagName'
+            value={tagName}
             onChange={this.handleFieldChange}
           ></Input>
-          <Divider />
-          <Message>
-            <Message.Header>Hint</Message.Header>
-            <p>
-              Associate a mapper to a steam profile by entering
-              the last part of the steam users profile URL after /id/
-            </p>
-          </Message>
-          <p style={{ display: 'inline' }}>https://steamcommunity.com/id/</p>
-          <Input
-            name='steamUrlName'
-            value={steamUrlName}
-            onChange={this.handleFieldChange}
-          >
-          </Input>
 
-          <Button style={{ display: 'block' }} onClick={this.handleMapperSubmit}>Submit</Button>
+          <Button style={{ display: 'block' }} onClick={this.handleTagSubmit}>Submit</Button>
         </div>
       </Segment>
     )
