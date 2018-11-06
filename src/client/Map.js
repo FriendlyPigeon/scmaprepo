@@ -39,6 +39,7 @@ export default class Map extends Component {
         else { throw response }
       })
       .then(map => {
+        console.log(map)
         this.setState({
           mapId: id,
           map: map
@@ -237,6 +238,17 @@ export default class Map extends Component {
                 <Link to={`/mapper/${map.mapper_ids[id]}`}>{author}</Link>
               </List.Content>
             </List.Item>
+          )}
+          </List>
+
+          <h3>Tags</h3>
+          <List>
+          {map.tags && map.tags.map((tag, id) =>
+            <List.Item key={id}>
+              <List.Content>
+                <Link to={`/maps`}>{tag}</Link>
+              </List.Content>
+            </List.Item>  
           )}
           </List>
 

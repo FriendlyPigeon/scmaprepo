@@ -11,6 +11,7 @@ export default class MapNew extends Component {
     this.state = {
       successfulSubmit: false,
       mapName: '',
+      mapDescription: '',
       allMappers: null,
       newMappers: [],
       error: null,
@@ -45,7 +46,7 @@ export default class MapNew extends Component {
   }
 
   handleMapSubmit() {
-    const { mapName, newMappers } = this.state;
+    const { mapName, mapDescription, newMappers } = this.state;
 
     fetch('/api/map', {
       method: 'POST',
@@ -55,6 +56,7 @@ export default class MapNew extends Component {
       },
       body: JSON.stringify({
         name: mapName,
+        description: mapDescription,
         authors: newMappers,
       })
     })
@@ -83,7 +85,7 @@ export default class MapNew extends Component {
   }
 
   render() {
-    const { successfulSubmit, mapName, error, allMappers, newMappers } = this.state;
+    const { successfulSubmit, mapName, error, mapDescription, allMappers, newMappers } = this.state;
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
@@ -110,7 +112,12 @@ export default class MapNew extends Component {
           }
           <h3>Description</h3>
           <Segment>
-            Test description
+            <Input
+              name='mapDescription'
+              onChange={this.handleFieldChange}
+              placeholder='Map description' 
+              value={mapDescription} 
+            />
           </Segment>
           <h3>Screenshots</h3>
           <a style={{ display: 'block' }}>

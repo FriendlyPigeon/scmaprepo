@@ -12,10 +12,12 @@ export default class MapEdit extends Component {
       successfulSubmit: false,
       map: null,
       allMappers: null,
+      allTags: null,
       error: null,
     }
 
     this.handleMapperDropdownChange = this.handleMapperDropdownChange.bind(this);
+    this.handleTagDropdownChange = this.handleTagDropdownChange.bind(this);
     this.handleMapNameChange = this.handleMapNameChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleMapSubmit = this.handleMapSubmit.bind(this);
@@ -87,6 +89,15 @@ export default class MapEdit extends Component {
     })
   }
 
+  handleTagDropdownChange(event, data) {
+    let mapWithNewTags = Object.assign({}, this.state.map);
+    mapWithNewTags.tag_ids = data.value;
+
+    this.setState({
+      map: mapWithNewTags,
+    })
+  }
+
   handleMapNameChange(event) {
     let mapWithNewName = Object.assign({}, this.state.map);
     mapWithNewName.name = event.target.value;
@@ -120,6 +131,7 @@ export default class MapEdit extends Component {
         name: map.name,
         description: map.description,
         authors: map.mapper_ids || [],
+        tags: map.tag_ids || [],
       })
     })
     .then(response => response.json())
@@ -141,7 +153,7 @@ export default class MapEdit extends Component {
   }
 
   render() {
-    const { successfulSubmit, map, error, allMappers, newMappers } = this.state;
+    const { successfulSubmit, map, error, allMappers, allTags, newMappers } = this.state;
     return(
       <Segment>
         {successfulSubmit && <Redirect to={`/map/${this.props.match.params.id}`} />}
@@ -166,9 +178,12 @@ export default class MapEdit extends Component {
             <h3>Tags</h3>
               <Dropdown
                 multiple
+                value={map.tag_ids}
+                onChange={this.handleTagDropdownChange}
                 placeholder='Tag'
                 search
                 selection
+                options={allTags}
               />
             <h3>Description</h3>
               <Segment>
