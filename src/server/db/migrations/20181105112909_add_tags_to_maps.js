@@ -5,6 +5,7 @@ exports.up = function(knex, Promise) {
     table.increments();
     table.integer('tag_id').references('tags.id').notNullable().onDelete('cascade');
     table.integer('map_id').references('maps.id').notNullable().onDelete('cascade');
+    table.unique(['tag_id', 'map_id']);
   })
 };
 
