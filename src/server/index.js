@@ -219,36 +219,45 @@ app.get('/api/mappers', function(req, res) {
 })
 
 app.post('/api/map', function(req, res) {
-  knex.transaction(function(transaction) {
-    return transaction
-      .insert({
-        name: req.body.name,
-        description: req.body.description,
-      })
-      .into('maps')
-      .returning('id')
-      .then(function(mapId) {
-        return Promise.all(req.body.authors.map(author => {
-          return transaction
-            .insert({
-              mapper_id: author,
-              map_id: mapId[0],
-            })
-            .into('authors')
-        }))
-      })
-  })
-  .then(function() {
-    res.send({
-      success: 'Map successfully submitted'
+  knex('maps')
+    .insert({
+      name: req.body.name,
+      description: req.body.description,
     })
-  })
-  .catch(function(error) {
-    console.log(error)
-    res.status(400).send({
-      error: error
+    .returning('id')
+    .then(function(mapId) {
+      req.body.authors.map(author => {
+        knex('authors')
+          .insert({
+            mapper_id: author,
+            map_id: mapId[0],
+          })
+          .then(() => {
+
+          })
+      })
+      req.body.tags.map(tag => {
+        knex('map_tags')
+          .insert({
+            tag_id: tag,
+            map_id: mapId[0],
+          })
+          .then(() => {
+
+          })
+      })
     })
-  })
+    .then(function() {
+      res.send({
+        success: 'Map successfully submitted'
+      })
+    })
+    .catch(function(error) {
+      console.log(error)
+      res.status(400).send({
+        error: error
+      })
+    })
 })
 
 app.put('/api/map/:id', function(req, res) {

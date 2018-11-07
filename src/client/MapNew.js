@@ -13,12 +13,15 @@ export default class MapNew extends Component {
       mapName: '',
       mapDescription: '',
       allMappers: null,
+      allTags: null,
       newMappers: [],
+      newTags: [],
       error: null,
     }
 
     this.handleFieldChange = this.handleFieldChange.bind(this);
     this.handleMapperDropdownChange = this.handleMapperDropdownChange.bind(this);
+    this.handleTagDropdownChange = this.handleTagDropdownChange.bind(this);
     this.handleMapSubmit = this.handleMapSubmit.bind(this);
   }
 
@@ -39,6 +42,23 @@ export default class MapNew extends Component {
           error: error,
         })
       })
+
+    fetch('/api/tags/dropdown')
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(tags => {
+        this.setState({
+          allTags: tags,
+        })
+      })
+      .catch(error => {
+        this.setState({
+          error: error,
+        })
+      })
   }
 
   handleFieldChange(event) {
@@ -46,7 +66,7 @@ export default class MapNew extends Component {
   }
 
   handleMapSubmit() {
-    const { mapName, mapDescription, newMappers } = this.state;
+    const { mapName, mapDescription, newMappers, newTags } = this.state;
 
     fetch('/api/map', {
       method: 'POST',
@@ -58,6 +78,7 @@ export default class MapNew extends Component {
         name: mapName,
         description: mapDescription,
         authors: newMappers,
+        tags: newTags,
       })
     })
     .then(response => response.json())
@@ -84,8 +105,14 @@ export default class MapNew extends Component {
     })
   }
 
+  handleTagDropdownChange(event, data) {
+    this.setState({
+      newTags: data.value,
+    })
+  }
+
   render() {
-    const { successfulSubmit, mapName, error, mapDescription, allMappers, newMappers } = this.state;
+    const { successfulSubmit, mapName, error, mapDescription, allMappers, allTags, newMappers, newTags } = this.state;
     return(
       <Segment>
         {error && <Message negative>{error}</Message>}
@@ -110,6 +137,16 @@ export default class MapNew extends Component {
             options={allMappers} 
           />
           }
+          <h3>Tags</h3>
+            <Dropdown
+              multiple
+              value={newTags}
+              onChange={this.handleTagDropdownChange}
+              placeholder='Tag'
+              search
+              selection
+              options={allTags}
+            />
           <h3>Description</h3>
           <Segment>
             <Input
