@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Button, Input, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
+import { Segment, Button, Rating, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
 import MapComments from './MapComments';
 import MapScreenshots from './MapScreenshots';
@@ -15,6 +15,8 @@ export default class Map extends Component {
       mapId: null,
       map: null,
       fileUrls: null,
+      averageRating: null,
+      personalRating: null,
       thumbnailUrls: null,
       screenshotUrls: null,
       screenshotOpen: false,
@@ -23,6 +25,7 @@ export default class Map extends Component {
       error: null,
     }
 
+    this.handleRate = this.handleRate.bind(this);
     this.handleScreenshotOpen = this.handleScreenshotOpen.bind(this);
     this.handleScreenshotClose = this.handleScreenshotClose.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
@@ -50,6 +53,24 @@ export default class Map extends Component {
           error: error.error,
         })
       })
+
+    fetch(`/api/map/${id}/ratings`)
+      .then(response => response.json())
+      .then(response => {
+        if(!response.error) { return response }
+        else { throw response }
+      })
+      .then(averageRating => {
+        this.setState({
+          averageRating: averageRating.averageRating
+        })
+      })
+      .catch(error => {
+        console.log(error)
+        this.setState({
+          error: error.error,
+        })
+      })
     
     fetch(`/api/map/${id}/thumbnails`)
       .then(response => response.json())
@@ -64,7 +85,7 @@ export default class Map extends Component {
       })
       .catch(error => {
         this.setState({
-          error: error
+          error: error.error,
         })
       })
 
@@ -81,7 +102,7 @@ export default class Map extends Component {
       })
       .catch(error => {
         this.setState({
-          error: error
+          error: error.error,
         })
       })
 
@@ -118,6 +139,38 @@ export default class Map extends Component {
           error: error.error,
         })
       })
+  }
+
+  handleRate(event, { rating }) {
+    console.log(rating)
+    const { id } = this.props.match.params;
+
+    fetch(`/api/map/${id}/rating`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        rating: rating,
+      })
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(!response.error) { return response }
+      else { throw response }
+    })
+    .then(rating => {
+      this.setState({
+        personalRating: rating.personalRating,
+        averageRating: rating.averageRating,
+      })
+    })
+    .catch(error => {
+      this.setState({
+        error: error.error,
+      })
+    })
   }
 
   handleScreenshotOpen(index) {
@@ -200,7 +253,7 @@ export default class Map extends Component {
   }
 
   render() {
-    const { error, mapId, map, fileUrls, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
+    const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
     return(
       <Segment>
  
@@ -251,6 +304,18 @@ export default class Map extends Component {
             </List.Item>  
           )}
           </List>
+
+          <h3>Rating</h3>
+          <Rating 
+            icon='star'
+            defaultRating={personalRating || averageRating}
+            maxRating={10}
+            onRate={this.handleRate}
+          />
+          {averageRating ?
+            <p style={{ display: 'inline' }}>Average: {parseFloat(averageRating).toFixed(2)}</p>
+          : <p style={{ display: 'inline' }}>Not yet rated</p>
+          }
 
           <h3>Description</h3>
             <Segment>
