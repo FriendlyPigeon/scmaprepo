@@ -533,6 +533,110 @@ app.post('/api/map/:id/screenshots', function(req, res) {
   }
 })
 
+app.get('/api/map/:id/ratings', function(req, res) {
+  knex('map_ratings')
+    .avg('rating as averageRating')
+    .where('map_ratings.map_id', req.params.id)
+    .first()
+    .then(averageRating => {
+      if(averageRating.averageRating === null) {
+        return res.send({ averageRating: 0 })
+      } else {
+        return res.send(averageRating)
+      }
+    })
+})
+
+app.post('/api/map/:id/rating', function(req, res) {
+  console.log(req.body.rating)
+  if(isNaN(Number(req.body.rating))) {
+    return res.status(400).send({ error: 'Rating must be a number from 1 to 10' })
+  } else if(req.body.rating < 1 || req.body.rating > 10) {
+    return res.status(400).send({ error: 'Rating must be a number from 1 to 10' })
+  } else if(req.user === undefined) {
+    return res.status(400).send({ error: 'You must be logged in to vote' })
+  } else {
+    // Check if map exists
+    knex('maps')
+      .select('id')
+      .where('id', req.params.id)
+      .then(function(id) {
+        if(!id) {
+          return res.status(400).send({ error: 'Map does not exist' })
+        }
+      })
+
+    // Check if user has already voted
+    knex('map_ratings')
+      .select('map_ratings.steam_id')
+      .where({
+        steam_id: req.user.steamid,
+        map_id: req.params.id,
+      })
+      .first()
+      .then(function(steam_id) {
+        // User already voted, update vote instead
+        if(steam_id) {
+          knex('map_ratings')
+            .update('rating', req.body.rating)
+            .where({
+              steam_id: req.user.steamid,
+              map_id: req.params.id
+            })
+            .returning('rating')
+            .then(function(personalRating) {
+              knex('map_ratings')
+                .avg('rating as averageRating')
+                .where('map_ratings.map_id', req.params.id)
+                .first()
+                .then(averageRating => {
+                  if(averageRating.averageRating === null) {
+                    return res.send({
+                      personalRating: personalRating.personalRating,
+                      averageRating: 0 
+                    })
+                  } else {
+                    return res.send({
+                      personalRating: personalRating.personalRating,
+                      averageRating: averageRating.averageRating,
+                    })
+                  }
+                })
+            })
+        }
+        // User hasn't already voted, create new vote
+        else {
+          knex('map_ratings')
+            .insert({
+              rating: req.body.rating,
+              steam_id: req.user.steamid,
+              map_id: req.params.id
+            })
+            .returning('rating')
+            .then(function(personalRating) {
+              knex('map_ratings')
+                .avg('rating as averageRating')
+                .where('map_ratings.map_id', req.params.id)
+                .first()
+                .then(averageRating => {
+                  if(averageRating.averageRating === null) {
+                    return res.send({
+                      personalRating: personalRating.personalRating,
+                      averageRating: 0 
+                    })
+                  } else {
+                    return res.send({
+                      personalRating: personalRating.personalRating,
+                      averageRating: averageRating.averageRating,
+                    })
+                  }
+                })
+            })
+        }
+      })
+  }
+})
+
 function getComments(mapId) {
   return new Promise(function(resolve, reject) {
     knex.select('users.id as user_id', 'users.username', 'map_comments.comment', 'map_comments.id as comment_id', 'map_comments.reply_to_id')
@@ -631,7 +735,7 @@ app.post('/api/map/:id/comments', function(req, res) {
         knex('map_comments')
         .insert({
           comment: req.body.comment,
-          user_id: req.session.userId,
+          steam_id: req.user.steamid,
           map_id: comment.map_id,
           reply_to_id: req.body.reply_to_id,
         })
@@ -665,7 +769,7 @@ app.delete('/api/map/:id/comments', function(req, res) {
           .where('map_comments.id', comment.id)
           .update({
             comment: '[deleted]',
-            user_id: null,
+            steam_id: null,
           })
           .then(function() {
             getComments(req.params.id)
