@@ -193,10 +193,6 @@ export default class MapEdit extends Component {
                   value={map.description} 
                 />
               </Segment>
-            <h3>Screenshots</h3>
-            <a style={{ display: 'block' }}>
-              Upload a new screenshot
-            </a>
             <Button onClick={this.handleMapSubmit}>Submit</Button>
           </div>
         : <Loader>Loading map information</Loader>}

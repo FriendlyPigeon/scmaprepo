@@ -156,10 +156,6 @@ export default class MapNew extends Component {
               value={mapDescription} 
             />
           </Segment>
-          <h3>Screenshots</h3>
-          <a style={{ display: 'block' }}>
-            Upload a new screenshot
-          </a>
           <Button onClick={this.handleMapSubmit}>Submit</Button>
         </div>
       </Segment>

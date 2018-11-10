@@ -135,7 +135,6 @@ app.get('/auth/steam',
 app.get('/auth/steam/return',
   steam.verify(),
   function(req, res) {
-    console.log(req.user)
     knex.select('steam_id')
       .from('users')
       .where('steam_id', req.user.steamid)
@@ -253,7 +252,6 @@ app.post('/api/map', function(req, res) {
       })
     })
     .catch(function(error) {
-      console.log(error)
       res.status(400).send({
         error: error
       })
@@ -276,7 +274,6 @@ app.put('/api/map/:id', function(req, res) {
         const current_authors = current_authors_object.map(author =>
           author.mapper_id
         )
-        console.log(req.body.authors)
         req.body.authors && req.body.authors.map(author => {
           if(author !== null && current_authors.includes(author) === false) {
             knex('authors')
@@ -409,7 +406,6 @@ app.post('/api/map/:id/files', function(req, res) {
         .then(function(map) {
           if(map.id) {
             let uploadedFile = req.files.file;
-            console.log(uploadedFile);
             let uploadedFileName = `${Date.now().toString()}_${uploadedFile.name}`;
             let uploadedFilePath = `${__dirname}/${uploadedFileName}`;
 
@@ -448,7 +444,6 @@ app.post('/api/map/:id/files', function(req, res) {
 })
 
 app.post('/api/map/:id/screenshots', function(req, res) {
-  console.log(req.files.file.data.length)
   // Only accept JPG or PNG images
   if(['image/png', 'image/jpeg'].includes(req.files.file.mimetype) === false) {
     res.status(400).send({ error: 'Uploaded file must be of type JPG or PNG' })
@@ -548,7 +543,6 @@ app.get('/api/map/:id/ratings', function(req, res) {
 })
 
 app.post('/api/map/:id/rating', function(req, res) {
-  console.log(req.body.rating)
   if(isNaN(Number(req.body.rating))) {
     return res.status(400).send({ error: 'Rating must be a number from 1 to 10' })
   } else if(req.body.rating < 1 || req.body.rating > 10) {
@@ -742,7 +736,6 @@ app.post('/api/map/:id/comments', function(req, res) {
         .then(() =>
           getComments(comment.map_id)
             .then(function(comments) {
-              console.log(comments)
               res.send(formatToNestedComments(comments))
             })
         )
@@ -774,7 +767,6 @@ app.delete('/api/map/:id/comments', function(req, res) {
           .then(function() {
             getComments(req.params.id)
             .then(function(comments) {
-              console.log(comments);
               res.send(formatToNestedComments(comments))
             })
           })
