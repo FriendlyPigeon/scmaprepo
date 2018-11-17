@@ -15,7 +15,7 @@ export default class MapperEdit extends Component {
     }
 
     this.handleMapperNameChange = this.handleMapperNameChange.bind(this);
-
+    this.handleMapperSubmit = this.handleMapperSubmit.bind(this);
   }
 
   componentDidMount() {
@@ -49,6 +49,8 @@ export default class MapperEdit extends Component {
   }
 
   handleMapperSubmit() {
+    const { id } = this.props.match.params;
+
     fetch(`/api/mapper/${id}`, {
       method: 'PUT',
       headers: {
@@ -71,7 +73,7 @@ export default class MapperEdit extends Component {
     )
     .catch(error =>
       this.setState({
-        error: error,
+        error: error.error,
       })  
     )
   }
@@ -93,7 +95,7 @@ export default class MapperEdit extends Component {
             <h2>Maps</h2>
             <List>
             {mapper.maps && mapper.maps.map((map, id) =>
-              <List.Item>
+              <List.Item key={id}>
                 <List.Content>
                   <Link to={`/map/${mapper.map_ids[id]}`}>{map}</Link>
                 </List.Content>

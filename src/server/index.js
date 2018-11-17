@@ -53,6 +53,59 @@ if(process.env.NODE_ENV === 'production') {
   }))
 }
 
+function isLoggedIn(req, res, next) {
+  if(req.user) {
+    return next();
+  }
+  return res.status(403).json({ error: 'You must be logged in' })
+}
+
+function hasPermissionToModifyMap(req, res, next) {
+  if(!req.user) {
+    return res.status(403).json({ error: 'You must be logged in' })
+  }
+
+  // Store steam id's of all users who are allowed to modify
+  // a map (admins, the uploader, and the mappers)
+  let permittedModifiers = [];
+  
+  // Get admins
+  knex('users')
+  .select('users.steam_id')
+  .where('is_admin', true)
+  .then(users => {
+    users.map(user => {
+      permittedModifiers.push(user.steam_id);
+    })
+
+    // Get uploader
+    knex('maps')
+    .select('maps.uploader')
+    .where('id', req.params.id)
+    .first()
+    .then(uploader => {
+      permittedModifiers.push(uploader.uploader)
+
+      // Get mappers
+      knex('authors')
+      .select('mappers.steam_id')
+      .innerJoin('mappers', 'mappers.id', 'authors.mapper_id')
+      .where('map_id', req.params.id)
+      .then(authors => {
+        authors.map(author => {
+          permittedModifiers.push(author.steam_id)
+        })
+
+        if(permittedModifiers.includes(req.user.steamid)) {
+          next();
+        } else {
+          return res.status(403).json({ error: 'You do not have permission to do this action' });
+        }
+      })
+    })
+  })
+}
+
 function findUsername(username) {
   return knex.select('username')
     .from('users')
@@ -217,14 +270,16 @@ app.get('/api/mappers', function(req, res) {
     })
 })
 
-app.post('/api/map', function(req, res) {
+app.post('/api/map', isLoggedIn, function(req, res) {
   knex('maps')
     .insert({
       name: req.body.name,
       description: req.body.description,
+      uploader: req.user.steamid,
     })
     .returning('id')
     .then(function(mapId) {
+      console.log(mapId)
       req.body.authors.map(author => {
         knex('authors')
           .insert({
@@ -252,13 +307,14 @@ app.post('/api/map', function(req, res) {
       })
     })
     .catch(function(error) {
+      console.log(error)
       res.status(400).send({
         error: error
       })
     })
 })
 
-app.put('/api/map/:id', function(req, res) {
+app.put('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
   knex
     .update({
       name: req.body.name,
@@ -389,15 +445,17 @@ app.get('/api/map/:id/screenshots', function(req, res) {
   })
 })
 
-app.post('/api/map/:id/files', function(req, res) {
-  if(['application/x-7z-compressed',
+app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
+  if(req.user === undefined) {
+    return res.status(403).send({ error: 'You must be logged in to upload a file.' })
+  } else if(['application/x-7z-compressed',
       'application/x-rar-compressed',
       'application/x-zip-compressed']
       .includes(req.files.file.mimetype) === false) 
     {
-      res.status(400).send({ error: 'Uploaded file must be of type 7Z, RAR, or ZIP' })
+      return res.status(400).send({ error: 'Uploaded file must be of type 7Z, RAR, or ZIP' })
     } else if(req.files.file.truncated) {
-      res.status(400).send({ error: 'File exceeds 5MB limit' })
+      return res.status(400).send({ error: 'File exceeds 5MB limit' })
     } else {
       knex.select('maps.id')
         .from('maps')
@@ -443,12 +501,15 @@ app.post('/api/map/:id/files', function(req, res) {
     }
 })
 
-app.post('/api/map/:id/screenshots', function(req, res) {
+app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
+  if(req.user === undefined) {
+    return res.status(403).send({ error: 'You must be logged in to upload a screenshot.' })
+  }
   // Only accept JPG or PNG images
-  if(['image/png', 'image/jpeg'].includes(req.files.file.mimetype) === false) {
-    res.status(400).send({ error: 'Uploaded file must be of type JPG or PNG' })
+  else if(['image/png', 'image/jpeg'].includes(req.files.file.mimetype) === false) {
+    return res.status(400).send({ error: 'Uploaded file must be of type JPG or PNG' })
   } else if((req.files.file.data.length/(1024*1024)) > 5) {
-    res.status(400).send({ error: 'File exceeds 5MB limit' })
+    return res.status(400).send({ error: 'File exceeds 5MB limit' })
   } else {
     knex.select('maps.id')
     .from('maps')
@@ -542,7 +603,7 @@ app.get('/api/map/:id/ratings', function(req, res) {
     })
 })
 
-app.post('/api/map/:id/rating', function(req, res) {
+app.post('/api/map/:id/rating', isLoggedIn, function(req, res) {
   if(isNaN(Number(req.body.rating))) {
     return res.status(400).send({ error: 'Rating must be a number from 1 to 10' })
   } else if(req.body.rating < 1 || req.body.rating > 10) {
@@ -681,7 +742,7 @@ app.get('/api/map/:id/comments', function(req, res) {
   })
 })
 
-app.post('/api/map/:id/comments', function(req, res) {
+app.post('/api/map/:id/comments', isLoggedIn, function(req, res) {
   const replyToId = req.body.reply_to_id;
 
   // Make sure user is logged in
@@ -810,7 +871,7 @@ app.get('/api/mapper/:id', function(req, res) {
     })
 })
 
-app.post('/api/mapper', function(req, res) {
+app.post('/api/mapper', isLoggedIn, function(req, res) {
   if(req.body.name === '') {
     return res.status(400).send({ error: 'Name can not be blank' })
   }
@@ -834,6 +895,23 @@ app.post('/api/mapper', function(req, res) {
     })
 })
 
+app.put('/api/mapper/:id', isLoggedIn, function(req, res) {
+  if(req.body.name === '') {
+    return res.status(400).send({ error: 'Name can not be blank' })
+  }
+
+  knex('mappers')
+    .update({
+      name: req.body.name
+    })
+    .where('id', req.params.id)
+    .then(() => {
+      return res.send({
+        success: 'Successful mapper update',
+      })
+    })
+})
+
 app.get('/api/tags', function(req, res) {
   knex('tags')
     .select('tags.id', 'tags.name')
@@ -842,7 +920,7 @@ app.get('/api/tags', function(req, res) {
     })
 })
 
-app.post('/api/tag', function(req, res) {
+app.post('/api/tag', isLoggedIn, function(req, res) {
   if(req.body.name === '') {
     return res.status(400).send({ error: 'Name can not be blank' })
   }

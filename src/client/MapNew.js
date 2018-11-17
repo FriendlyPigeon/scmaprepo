@@ -92,7 +92,6 @@ export default class MapNew extends Component {
       })  
     })
     .catch(error => {
-      console.log(error)
       this.setState({
         error: error.error,
       })  

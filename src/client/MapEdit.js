@@ -58,7 +58,7 @@ export default class MapEdit extends Component {
       })
       .catch(error => {
         this.setState({
-          error: error,
+          error: error.error,
         })
       })
 
@@ -75,7 +75,7 @@ export default class MapEdit extends Component {
       })
       .catch(error => {
         this.setState({
-          error: error,
+          error: error.error,
         })
       })
   }
@@ -146,7 +146,7 @@ export default class MapEdit extends Component {
     )
     .catch(error =>
       this.setState({
-        error: error,
+        error: error.error,
       })  
     )
 
@@ -156,6 +156,7 @@ export default class MapEdit extends Component {
     const { successfulSubmit, map, error, allMappers, allTags, newMappers } = this.state;
     return(
       <Segment>
+        {error && <Message negative>{error}</Message>}
         {successfulSubmit && <Redirect to={`/map/${this.props.match.params.id}`} />}
         {map && allMappers ?
           <div>
