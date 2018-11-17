@@ -252,6 +252,12 @@ export default class Map extends Component {
     })
   }
 
+  handleMapDelete(event) {
+    event.preventDefault();
+
+    console.log('reached')
+  }
+
   render() {
     const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
     return(
@@ -262,9 +268,14 @@ export default class Map extends Component {
         <div>
           <h2>{map.name}</h2>
           <Link 
-            style={{ float: 'right' }} 
+            style={{ float: 'right', padding: '5px' }} 
             to={`/map/${mapId}/edit`}
           >Edit</Link>
+          <a
+            href=""
+            style={{ float: 'right', padding: '5px' }}
+            onClick={this.handleMapDelete}
+          >Delete</a>
           <Divider />
 
           <h3>Map files</h3>

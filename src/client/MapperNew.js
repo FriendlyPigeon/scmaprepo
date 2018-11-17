@@ -75,8 +75,9 @@ export default class MapperNew extends Component {
               the last part of the steam users profile URL after /id/
             </p>
           </Message>
-          <p style={{ display: 'inline' }}>https://steamcommunity.com/id/</p>
           <Input
+            label='https://steamcommunity.com/id/'
+            placeholder='Steam profile URL name'
             name='steamUrlName'
             value={steamUrlName}
             onChange={this.handleFieldChange}

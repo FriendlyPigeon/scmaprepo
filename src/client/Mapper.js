@@ -52,7 +52,7 @@ export default class Mapper extends Component {
             <h2>Maps</h2>
             <List>
             {mapper.maps && mapper.maps.map((map, id) =>
-              <List.Item>
+              <List.Item key={id}>
                 <List.Content>
                   <Link to={`/map/${mapper.map_ids[id]}`}>{map}</Link>
                 </List.Content>
