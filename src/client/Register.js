@@ -33,7 +33,7 @@ export default class Register extends Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    const { username, email, password, password2 } = this.state;
+    const { username, email } = this.state;
 
     fetch('/api/users/register', {
       method: 'POST',
@@ -44,8 +44,6 @@ export default class Register extends Component {
       body: JSON.stringify({
         username: username,
         email: email,
-        password: password,
-        password2: password2
       })
     })
       .then(response => response.json())
@@ -64,17 +62,10 @@ export default class Register extends Component {
   }
 
   render() {
-    const { username, email, password, password2, registered, errors } = this.state;
-    if(registered) {
-      return <Redirect to={{
-        pathname: '/login',
-        state: {
-          email: email
-        }
-      }}/>
-    }
+    const { username, email, registered, errors } = this.state;
     return(
         <Form onSubmit={this.handleSubmit}>
+          {registered && <Redirect to='/maps' />}
           {errors &&
             errors.map((error) =>
               <Message negative key={error.msg}>{error.msg}</Message>)

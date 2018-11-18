@@ -141,6 +141,9 @@ app.post('/api/users/register', [
   check('email', 'Email is not valid').isEmail(),
   check('email', 'Email is taken').custom(email => findEmail(email))
 ], (req, res) => {
+  if(!req.user) {
+    return res.status(403).json({ errors: [{ msg: 'You must login through steam before registering'}] });
+  }
 
   const errors = validationResult(req);
   if(!errors.isEmpty()) {
@@ -197,14 +200,8 @@ app.get('/auth/steam/return',
         if(steam_id) {
           res.redirect('/')
         } else {
-          knex('users')
-          .insert({
-            username: req.user.username,
-            steam_id: req.user.steamid,
-          })
-          .then(() =>
-            res.redirect('/')
-          )
+          console.log('reached')
+          res.redirect('/register')
         }
       })
   }
@@ -396,6 +393,17 @@ app.put('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
     .then(() => {
       res.send({
         success: 'Successfully updated map'
+      })
+    })
+})
+
+app.delete('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
+  knex('maps')
+    .delete()
+    .where('id', req.params.id)
+    .then(() => {
+      res.send({
+        success: 'Successfully deleted map'
       })
     })
 })
