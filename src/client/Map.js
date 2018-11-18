@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 import { Segment, Button, Rating, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
@@ -14,6 +14,7 @@ export default class Map extends Component {
     this.state = {
       mapId: null,
       map: null,
+      successfulDelete: false,
       fileUrls: null,
       averageRating: null,
       personalRating: null,
@@ -23,6 +24,7 @@ export default class Map extends Component {
       screenshotOpenUrl: null,
       comments: null,
       error: null,
+      successfulDelete: false,
     }
 
     this.handleRate = this.handleRate.bind(this);
@@ -30,6 +32,7 @@ export default class Map extends Component {
     this.handleScreenshotClose = this.handleScreenshotClose.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
     this.handleUploadScreenshot = this.handleUploadScreenshot.bind(this);
+    this.handleMapDelete = this.handleMapDelete.bind(this);
   }
 
   componentDidMount() {
@@ -254,15 +257,33 @@ export default class Map extends Component {
 
   handleMapDelete(event) {
     event.preventDefault();
+    const { id } = this.props.match.params;
 
-    console.log('reached')
+    fetch(`/api/map/${id}`, {
+      method: 'DELETE',
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(!response.error) { return response }
+      else { throw response }
+    })
+    .then(success => {
+      this.setState({
+        successfulDelete: true,
+      })
+    })
+    .catch(error => {
+      this.setState({
+        error: error.error,
+      })
+    })
   }
 
   render() {
-    const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments } = this.state;
+    const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments, successfulDelete } = this.state;
     return(
       <Segment>
- 
+      {successfulDelete && <Redirect to={'/maps'} />}
       {error && <Message negative>{error}</Message>}
       {map && comments ?
         <div>
