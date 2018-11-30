@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Dropdown, Input, Loader, Dimmer, Divider, Message } from 'semantic-ui-react';
+import { Segment, Dropdown, Input, Loader, Dimmer, Divider, Message, Rating } from 'semantic-ui-react';
 
 export default class Maps extends Component {
   constructor(props) {
@@ -74,6 +74,14 @@ export default class Maps extends Component {
         if(x > y) { return 1 }
         return 0
       })
+    } else if(data.value === 'rating') {
+      newMapsArray.sort(function(a, b) {
+        let x = a.average_rating
+        let y = b.average_rating
+        if(x > y) { return -1 }
+        if(x < y) { return 1 }
+        return 0
+      })
     }
 
     this.setState({
@@ -114,6 +122,12 @@ export default class Maps extends Component {
           if(map.name.includes(searchTerm)) {
             return <h3 key={map.id}>
               <Link to={`/map/${map.id}`}>{map.name}</Link>
+              <Rating 
+                icon='star'
+                defaultRating={map.average_rating}
+                maxRating={10}
+                disabled
+              /> 
               <Divider section />
             </h3>
           }

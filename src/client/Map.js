@@ -261,6 +261,10 @@ export default class Map extends Component {
 
     fetch(`/api/map/${id}`, {
       method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     })
     .then(response => response.json())
     .then(response => {
@@ -268,11 +272,48 @@ export default class Map extends Component {
       else { throw response }
     })
     .then(success => {
+      console.log(success)
       this.setState({
         successfulDelete: true,
       })
     })
     .catch(error => {
+      this.setState({
+        error: error.error,
+      })
+    })
+  }
+
+  handleFileDelete(event, fileUrl) {
+    event.preventDefault();
+    const { id } = this.props.match.params;
+
+    const pattern = /[\w-]+\.[a-zA-Z]+$/
+    const fileName = pattern.exec(fileUrl)[0]
+    
+    fetch(`/api/map/${id}/files/${fileName}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(!response.error) { return response }
+      else { throw response }
+    })
+    .then(response => {
+      const newFileUrls = this.state.fileUrls.filter(file => {
+        return file !== fileUrl
+      })
+
+      this.setState({
+        fileUrls: newFileUrls,
+      })
+    })
+    .catch(error => {
+      console.log(error.error)
       this.setState({
         error: error.error,
       })
@@ -288,25 +329,34 @@ export default class Map extends Component {
       {map && comments ?
         <div>
           <h2>{map.name}</h2>
-          <Link 
-            style={{ float: 'right', padding: '5px' }} 
-            to={`/map/${mapId}/edit`}
-          >Edit</Link>
-          <a
-            href=""
-            style={{ float: 'right', padding: '5px' }}
-            onClick={this.handleMapDelete}
-          >Delete</a>
+
+          <Button.Group style={{ float: 'right' }}>
+            <Link to={`/map/${mapId}/edit`}>
+              <Button>
+                Edit
+              </Button>
+            </Link>
+            
+            <Button onClick={e => this.handleMapDelete(e)}>
+              Delete
+            </Button>
+          </Button.Group>
+          
           <Divider />
 
           <h3>Map files</h3>
           <List>
-          {fileUrls && fileUrls.map((fileUrl, index) => 
+          {fileUrls && fileUrls.map((fileUrl, index) =>
+          <div>
             <List.Item>
               <a href={fileUrl}>
                 {fileUrl}
               </a>
             </List.Item>
+            <Button onClick={e => this.handleFileDelete(e, fileUrl)}>
+              Delete
+            </Button>
+          </div>
           )}
           </List>
 

@@ -97,7 +97,7 @@ function hasPermissionToModifyMap(req, res, next) {
         })
 
         if(permittedModifiers.includes(req.user.steamid)) {
-          next();
+          return next();
         } else {
           return res.status(403).json({ error: 'You do not have permission to do this action' });
         }
@@ -215,9 +215,12 @@ app.get('/api/users/logout', function(req, res) {
 })
 
 app.get('/api/maps', function(req, res) {
-  knex.select()
+  knex.select('maps.id', 'maps.name', 'maps.created_at', knex.raw('avg(map_ratings.rating) as average_rating'))
     .from('maps')
+    .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
+    .groupBy('maps.id', 'maps.name', 'maps.created_at')
     .then(function(maps) {
+      console.log(maps)
       res.send(maps);
     })
 })
@@ -398,10 +401,17 @@ app.put('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
 })
 
 app.delete('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
+  storage.bucket(bucketName).deleteFiles({ prefix: `map/${req.params.id}` }, function(err, files) {
+    if(err) {
+      console.log(err)
+    }
+  })
+
   knex('maps')
     .delete()
     .where('id', req.params.id)
     .then(() => {
+      console.log('reached')
       res.send({
         success: 'Successfully deleted map'
       })
@@ -507,6 +517,20 @@ app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
           }
         })
     }
+})
+
+app.delete('/api/map/:id/files/:fileName', hasPermissionToModifyMap, function(req, res) {
+  storage
+    .bucket(bucketName)
+    .file(`map/${req.params.id}/files/${req.params.fileName}`).delete()
+    .then(() => {
+      return res.send({success: "Successfully deleted file"});
+    })
+    .catch(error => {
+      console.log(error)
+
+      return res.send({error: "There was an error deleting the file"})
+    })
 })
 
 app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
