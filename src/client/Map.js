@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link, Redirect } from 'react-router-dom';
 
-import { Segment, Button, Rating, Dimmer, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
+import { Segment, Button, Rating, Dimmer, Modal, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
 import MapComments from './MapComments';
 import MapScreenshots from './MapScreenshots';
@@ -320,6 +320,49 @@ export default class Map extends Component {
     })
   }
 
+  handleScreenshotDelete(event, screenshotUrl) {
+    event.preventDefault();
+    const { id } = this.props.match.params;
+
+    const pattern = /[^\/]+$/
+    const screenshotName = pattern.exec(screenshotUrl)[0]
+    
+    fetch(`/api/map/${id}/screenshots/${screenshotName}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(!response.error) { return response }
+      else { throw response }
+    })
+    .then(response => {
+      const newScreenshotUrls = this.state.screenshotUrls.filter(screenshot => {
+        return screenshot !== screenshotUrl
+      })
+
+      const newThumbnailUrls = this.state.thumbnailUrls.filter(thumbnail => {
+        return thumbnail !== `https://storage.googleapis.com/scmaprepo-files/map/${id}/thumbnails/${screenshotName}-thumbnail.jpg`
+      })
+
+      this.setState({
+        screenshotUrls: newScreenshotUrls,
+        thumbnailUrls: newThumbnailUrls,
+        screenshotOpen: false,
+      })
+    })
+    .catch(error => {
+      console.log(error.error)
+      this.setState({
+        error: error.error,
+        screenshotOpen: false,
+      })
+    })
+  }
+
   render() {
     const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments, successfulDelete } = this.state;
     return(
@@ -413,7 +456,13 @@ export default class Map extends Component {
 
           {screenshotUrls && screenshotOpenUrl &&
             <Dimmer active={screenshotOpen} onClickOutside={this.handleScreenshotClose} page>
-              <Image src={screenshotOpenUrl}></Image>
+              <Image style={{ maxWidth: '100%', maxHeight: '100%' }} src={screenshotOpenUrl} size='huge'></Image>
+              <Button 
+                style={{ display: 'block', margin: 'auto' }} 
+                onClick={e => this.handleScreenshotDelete(e, screenshotOpenUrl)}
+              >
+                Delete
+              </Button>
             </Dimmer>
           }
 
