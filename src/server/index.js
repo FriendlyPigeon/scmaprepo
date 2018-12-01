@@ -550,8 +550,8 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
     .then(function(map) {
       if(map.id) {
         let imageFile = req.files.file;
-        let imageFileName = `${Date.now().toString()}${req.files.file.name}`;
-        let imageFilePath = `${__dirname}/${imageFileName}`;
+        let imageFileName = `${Date.now().toString()}${req.files.file.name}`
+        let imageFilePath = `${__dirname}/${imageFileName}`
         let thumbnailName = `${Date.now().toString()}${req.files.file.name}-thumbnail.jpg`
         let thumbnailPath = `${__dirname}/${thumbnailName}`
 
@@ -619,6 +619,32 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
       }
     }) 
   }
+})
+
+app.delete('/api/map/:id/screenshots/:screenshotName', hasPermissionToModifyMap, function(req, res) {
+  storage
+    .bucket(bucketName)
+    .file(`map/${req.params.id}/screenshots/${req.params.screenshotName}`)
+    .delete()
+    .then(() => {
+      storage
+        .bucket(bucketName)
+        .file(`map/${req.params.id}/thumbnails/${req.params.screenshotName}-thumbnail.jpg`)
+        .delete()
+        .then(() => {
+          return res.send({success: "Successfully deleted file"})
+        })
+        .catch(error => {
+          console.log(error)
+
+          return res.send({error: "There was an error deleting the thumbnail"})
+        })
+    })
+    .catch(error => {
+      console.log(error)
+
+      return res.send({error: "There was an error deleting the screenshot"})
+    })
 })
 
 app.get('/api/map/:id/ratings', function(req, res) {
