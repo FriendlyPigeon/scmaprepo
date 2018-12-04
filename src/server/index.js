@@ -2,11 +2,12 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const jimp = require('jimp');
 const express = require('express');
-const session = require('express-session');
 const steam = require('steam-login');
 const { check, validationResult } = require('express-validator/check');
 const bodyParser = require('body-parser');
 const knex = require('./db/knex');
+const session = require('express-session');
+const knexSessionStore = require('connect-session-knex')(session);
 const path = require('path');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
@@ -33,7 +34,12 @@ app.use(fileUpload({
 
 app.use(express.static('dist'));
 
+const store = new knexSessionStore({
+  knex: knex,
+});
+
 app.use(session({
+  store: store,
   secret: 'some secret',
   saveUninitialized: true,
   resave: false,
