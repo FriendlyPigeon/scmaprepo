@@ -489,7 +489,7 @@ app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
           if(map.id) {
             let uploadedFile = req.files.file
             let uploadedTime = Date.now().toString()
-            let uploadedFileName = uploadedFile.name
+            let uploadedFileName = `${uploadedTime}${uploadedFile.name}`
             let uploadedFilePath = `${__dirname}/${uploadedFileName}`
 
             uploadedFile.mv(uploadedFilePath, function(err) {
@@ -562,9 +562,9 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
       if(map.id) {
         let imageFile = req.files.file
         let uploadedTime = Date.now().toString()
-        let imageFileName = imageFile.name
+        let imageFileName = `${uploadedTime}${imageFile.name}`
         let imageFilePath = `${__dirname}/${imageFileName}`
-        let thumbnailName = `${req.files.file.name}-thumbnail.jpg`
+        let thumbnailName = `${imageFileName}-thumbnail.jpg`
         let thumbnailPath = `${__dirname}/${thumbnailName}`
 
 
