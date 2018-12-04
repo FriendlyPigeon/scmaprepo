@@ -119,7 +119,7 @@ export default class Maps extends Component {
         <Divider section />
         {maps ?
         maps.map((map) => {
-          if(map.name.includes(searchTerm)) {
+          if(map.name.toLowerCase().includes(searchTerm.toLowerCase())) {
             return <h3 key={map.id}>
               <Link to={`/map/${map.id}`}>{map.name}</Link>
               <Rating 
