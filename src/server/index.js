@@ -481,9 +481,10 @@ app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
         .first()
         .then(function(map) {
           if(map.id) {
-            let uploadedFile = req.files.file;
-            let uploadedFileName = `${Date.now().toString()}_${uploadedFile.name}`;
-            let uploadedFilePath = `${__dirname}/${uploadedFileName}`;
+            let uploadedFile = req.files.file
+            let uploadedTime = Date.now().toString()
+            let uploadedFileName = uploadedFile.name
+            let uploadedFilePath = `${__dirname}/${uploadedFileName}`
 
             uploadedFile.mv(uploadedFilePath, function(err) {
               if(err) {
@@ -493,6 +494,10 @@ app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
 
             storage.bucket(bucketName).upload(uploadedFilePath, {
               destination: `/map/${map.id}/files/${uploadedFileName}`,
+              metadata: {
+                uploadedTime: uploadedTime,
+                uploadedBy: req.user.steamid,
+              },
               gzip: true,
             })
             .then(file => {
@@ -549,10 +554,11 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
     .first()
     .then(function(map) {
       if(map.id) {
-        let imageFile = req.files.file;
-        let imageFileName = `${Date.now().toString()}${req.files.file.name}`
+        let imageFile = req.files.file
+        let uploadedTime = Date.now().toString()
+        let imageFileName = imageFile.name
         let imageFilePath = `${__dirname}/${imageFileName}`
-        let thumbnailName = `${Date.now().toString()}${req.files.file.name}-thumbnail.jpg`
+        let thumbnailName = `${req.files.file.name}-thumbnail.jpg`
         let thumbnailPath = `${__dirname}/${thumbnailName}`
 
 
@@ -576,6 +582,10 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
         // Upload raw image
         storage.bucket(bucketName).upload(imageFilePath, {
           destination: `/map/${map.id}/screenshots/${imageFileName}`,
+          metadata: {
+            uploadedTime: uploadedTime,
+            uploadedBy: req.user.steamid,
+          },
           gzip: true,
         })
         .then(file => {
@@ -588,6 +598,10 @@ app.post('/api/map/:id/screenshots', isLoggedIn, function(req, res) {
           // Upload thumbnail
           storage.bucket(bucketName).upload(thumbnailPath, {
             destination: `/map/${map.id}/thumbnails/${thumbnailName}`,
+            metadata: {
+              uploadedTime: uploadedTime,
+              uploadedBy: req.user.steamid,
+            },
             gzip: true,
           })
           .then(file => {
