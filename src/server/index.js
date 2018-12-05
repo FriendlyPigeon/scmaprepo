@@ -1,4 +1,5 @@
 const fs = require('fs');
+const https = require('https');
 const fetch = require('node-fetch');
 const jimp = require('jimp');
 const express = require('express');
@@ -18,6 +19,13 @@ const projectId = 'scmaprepo';
 const storage = new Storage({
   projectId: projectId
 })
+
+if(process.env.NODE_ENV === 'production') {
+  const credentials = {
+    key: fs.readFileSync('privkey.pem'),
+    cert: fs.readFileSync('fullchain.pem')
+  }
+}
 
 const bucketName = 'scmaprepo-files'
 
@@ -1013,4 +1021,9 @@ app.get('*', function(req, res) {
   res.sendFile(path.resolve(__dirname + '/../../dist/index.html'))
 })
 
-app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))
+if(process.env.NODE_ENV === 'production') {
+  const httpsServer = https.createServer(credentials, app)
+  httpsServer.listen(443)
+} else {
+  app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))
+}
