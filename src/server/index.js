@@ -1,4 +1,5 @@
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 const fetch = require('node-fetch');
 const jimp = require('jimp');
@@ -1023,9 +1024,11 @@ app.get('*', function(req, res) {
   res.sendFile(path.resolve(__dirname + '/../../dist/index.html'))
 })
 
+const httpServer = http.createServer(app);
 if(process.env.NODE_ENV === 'production') {
   const httpsServer = https.createServer(credentials, app)
+  httpServer.listen(80)
   httpsServer.listen(443)
 } else {
-  app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}`))
+  httpServer.listen(process.env.NODE_ENV || 8080)
 }
