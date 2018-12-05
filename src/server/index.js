@@ -206,7 +206,6 @@ app.get('/auth/steam/return',
         if(steam_id) {
           res.redirect('/')
         } else {
-          console.log('reached')
           res.redirect('/register')
         }
       })
@@ -226,7 +225,6 @@ app.get('/api/maps', function(req, res) {
     .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
     .groupBy('maps.id', 'maps.name', 'maps.created_at')
     .then(function(maps) {
-      console.log(maps)
       res.send(maps);
     })
 })
@@ -285,7 +283,6 @@ app.post('/api/map', isLoggedIn, function(req, res) {
     })
     .returning('id')
     .then(function(mapId) {
-      console.log(mapId)
       req.body.authors.map(author => {
         knex('authors')
           .insert({
@@ -417,7 +414,6 @@ app.delete('/api/map/:id', hasPermissionToModifyMap, function(req, res) {
     .delete()
     .where('id', req.params.id)
     .then(() => {
-      console.log('reached')
       res.send({
         success: 'Successfully deleted map'
       })
