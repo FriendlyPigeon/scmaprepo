@@ -20,8 +20,10 @@ const storage = new Storage({
   projectId: projectId
 })
 
+let credentials = undefined
+
 if(process.env.NODE_ENV === 'production') {
-  const credentials = {
+  credentials = {
     key: fs.readFileSync('privkey.pem'),
     cert: fs.readFileSync('fullchain.pem')
   }
