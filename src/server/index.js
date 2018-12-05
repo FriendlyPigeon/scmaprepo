@@ -47,8 +47,8 @@ app.use(session({
 
 if(process.env.NODE_ENV === 'production') {
   app.use(steam.middleware({
-    realm: 'https://scmaprepo.appspot.com/',
-    verify: 'https://scmaprepo.appspot.com/auth/steam/return',
+    realm: 'http://maprepo.org/',
+    verify: 'http://maprepo.org/auth/steam/return',
     apiKey: process.env.STEAM_API_KEY
   }))
 } else {
