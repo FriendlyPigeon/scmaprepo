@@ -1,4 +1,6 @@
+const path = require('path');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const htmlPlugin = new HtmlWebPackPlugin({
   template: "./src/client/index.html",
@@ -12,6 +14,12 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/'
   },
+  resolve: {
+    extensions: ['.js', '.jsx'],
+    alias: {
+      '../../theme.config$': path.join(__dirname, 'semantic-theme/theme.config')
+    }
+  },
   module: {
     rules: [
       {
@@ -22,28 +30,32 @@ module.exports = {
         }
       },
       {
-        test: /\.css$/,
         use: [
-          {
-            loader: "style-loader"
-          },
-          {
-            loader: "css-loader",
-            options: {
-              modules: true,
-              importLoaders: 1,
-              localIdentName: "[name]_[local]_[hash:base64]",
-              sourceMap: true,
-              minimize: true,
-            }
-          }
-        ]
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'less-loader'
+        ],
+        test: /\.less$/
+      },
+
+      // this handles images
+      {
+          test: /\.jpe?g$|\.gif$|\.ico$|\.png$|\.svg$/,
+          use: 'file-loader?name=[name].[ext]?[hash]'
+      },
+
+      // the following rules handle font extraction
+      {
+          test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+          loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
-        test: /\.(png|svg|jpg|gif)$/,
-        use: [
-          'file-loader'
-        ]
+          test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+          loader: 'file-loader'
+      },
+      {
+          test: /\.otf(\?.*)?$/,
+          use: 'file-loader?name=/fonts/[name].[ext]&mimetype=application/font-otf'
       }
     ]
   },
@@ -56,5 +68,10 @@ module.exports = {
     },
     historyApiFallback: true,
   },
-  plugins: [htmlPlugin]
+  plugins: [
+    htmlPlugin,
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
+    })
+  ]
 };
