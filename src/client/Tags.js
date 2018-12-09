@@ -36,7 +36,7 @@ export default class Tags extends Component {
   render() {
     const { tags, error } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         <h3>
           <Link to='/tag/new'>New tag</Link>

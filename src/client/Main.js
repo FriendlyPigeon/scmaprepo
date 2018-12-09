@@ -24,22 +24,14 @@ export default class Main extends Component {
 
     this.state = {
       ageModalOpen: true,
-      policyDenied: false,
     }
 
     this.handleAgeModalClose = this.handleAgeModalClose.bind(this);
-    this.handleAgeModalDeny = this.handleAgeModalDeny.bind(this);
   }
 
   handleAgeModalClose() {
     this.setState({
       ageModalOpen: false
-    })
-  }
-
-  handleAgeModalDeny() {
-    this.setState({
-      policyDenied: true
     })
   }
 
@@ -58,9 +50,11 @@ export default class Main extends Component {
           <Button color='green' onClick={this.handleAgeModalClose} inverted>
             <Icon name='checkmark' />I am 18+ and accept cookies
           </Button>
-          <Button color='red' onClick={this.handleAgeModalDeny} inverted>
+          <a href="https://www.google.com/">
+          <Button color='red' inverted>
             <Icon name='x' />I am under 18 or do not consent to cookies
           </Button>
+          </a>
         </Modal.Actions>
       </Modal>
 

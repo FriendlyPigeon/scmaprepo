@@ -37,6 +37,13 @@ module.exports = {
         ],
         test: /\.less$/
       },
+      {
+        use: [
+          'style-loader',
+          'css-loader'
+        ],
+        test: /\.css$/
+      },
 
       // this handles images
       {

@@ -10,7 +10,7 @@ import SteamLoginButton from './SteamLoginButton.png';
 const Navbar = () => (
   <LoggedInContext.Consumer>
   {({ loggedIn, loggedInUser }) => (
-  <Menu>
+  <Menu inverted>
     <Menu.Item 
       as={Link} 
       to='/maps'

@@ -20,7 +20,7 @@ export default class MapCommentReply extends Component {
   render() {
     const { newComment } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         <Form onSubmit={() => this.props.onCommentSubmit(this.props.commentId, newComment)}>
           <TextArea
             autoHeight 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Redirect } from 'react-router-dom';
 
-import { Segment, Divider, Dropdown, Button, Input, Message } from 'semantic-ui-react';
+import { Segment, Divider, Dropdown, Button, Input, TextArea, Form, Message } from 'semantic-ui-react';
 
 export default class MapNew extends Component {
   constructor(props) {
@@ -113,10 +113,11 @@ export default class MapNew extends Component {
   render() {
     const { successfulSubmit, mapName, error, mapDescription, allMappers, allTags, newMappers, newTags } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         {successfulSubmit && <Redirect to={'/maps'} />}
         <div>
+          <Form>
           <h3>Map name</h3>
           <Input
             name='mapName'
@@ -147,15 +148,18 @@ export default class MapNew extends Component {
               options={allTags}
             />
           <h3>Description</h3>
-          <Segment>
-            <Input
-              name='mapDescription'
-              onChange={this.handleFieldChange}
-              placeholder='Map description' 
-              value={mapDescription} 
+          
+            <TextArea 
+            autoHeight 
+            rows={5}
+            name='mapDescription'
+            placeholder='Map description'
+            value={mapDescription}
+            onChange={this.handleFieldChange}
             />
-          </Segment>
-          <Button onClick={this.handleMapSubmit}>Submit</Button>
+          </Form>
+          
+          <Button primary style={{ display: 'block' }} onClick={this.handleMapSubmit}>Submit</Button>
         </div>
       </Segment>
     )

@@ -24,7 +24,7 @@ export default class MapComment extends Component {
         {({ loggedInUser }) =>
         { return comment &&
         <div>
-          <Segment>
+          <Segment style={{ backgroundColor: '#222222', color: '#FFFFFF' }}>
             {error && <Message negative>{error}</Message>}
             <Label>{comment.username ? comment.username : 'deleted'}</Label>
               {comment.comment}

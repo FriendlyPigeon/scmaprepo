@@ -57,7 +57,7 @@ export default class MapperNew extends Component {
   render() {
     const { error, successfulSubmit, mapperName, steamUrlName } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         {successfulSubmit && <Redirect to={'/mappers'} />}
         <div>
@@ -68,7 +68,7 @@ export default class MapperNew extends Component {
             onChange={this.handleFieldChange}
           ></Input>
           <Divider />
-          <Message>
+          <Message className='black'>
             <Message.Header>Hint</Message.Header>
             <p>
               Associate a mapper to a steam profile by entering
@@ -84,7 +84,7 @@ export default class MapperNew extends Component {
           >
           </Input>
 
-          <Button style={{ display: 'block' }} onClick={this.handleMapperSubmit}>Submit</Button>
+          <Button primary style={{ display: 'block' }} onClick={this.handleMapperSubmit}>Submit</Button>
         </div>
       </Segment>
     )
