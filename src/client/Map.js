@@ -366,7 +366,7 @@ export default class Map extends Component {
   render() {
     const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments, successfulDelete } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
       {successfulDelete && <Redirect to={'/maps'} />}
       {error && <Message negative>{error}</Message>}
       {map && comments ?
@@ -375,12 +375,12 @@ export default class Map extends Component {
 
           <Button.Group style={{ float: 'right' }}>
             <Link to={`/map/${mapId}/edit`}>
-              <Button>
+              <Button primary>
                 Edit
               </Button>
             </Link>
             
-            <Button onClick={e => this.handleMapDelete(e)}>
+            <Button primary onClick={e => this.handleMapDelete(e)}>
               Delete
             </Button>
           </Button.Group>
@@ -405,7 +405,7 @@ export default class Map extends Component {
 
           <form onSubmit={this.handleUploadFile}>
             <input ref={(ref) => { this.uploadFileInput = ref; }} type="file" accept=".7z,.zip,.rar" />
-            <Button>Upload</Button>
+            <Button primary>Upload</Button>
           </form>
 
           <h3>Authors</h3>
@@ -443,7 +443,7 @@ export default class Map extends Component {
           }
 
           <h3>Description</h3>
-            <Segment>
+            <Segment style={{ backgroundColor: '#222222', color: '#FFFFFF' }}>
               {map.description}
             </Segment>
 
@@ -468,7 +468,7 @@ export default class Map extends Component {
 
           <form onSubmit={this.handleUploadScreenshot}>
             <input ref={(ref) => { this.uploadScreenshotInput = ref; }} type="file" accept=".jpg,.png" />
-            <Button>Upload</Button>
+            <Button primary>Upload</Button>
           </form>
 
           <h3>Comments</h3>

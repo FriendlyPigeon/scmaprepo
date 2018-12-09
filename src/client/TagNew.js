@@ -55,7 +55,7 @@ export default class TagNew extends Component {
   render() {
     const { error, successfulSubmit, tagName } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         {successfulSubmit && <Redirect to={'/tags'} />}
         <div>
@@ -66,7 +66,7 @@ export default class TagNew extends Component {
             onChange={this.handleFieldChange}
           ></Input>
 
-          <Button style={{ display: 'block' }} onClick={this.handleTagSubmit}>Submit</Button>
+          <Button primary style={{ display: 'block' }} onClick={this.handleTagSubmit}>Submit</Button>
         </div>
       </Segment>
     )

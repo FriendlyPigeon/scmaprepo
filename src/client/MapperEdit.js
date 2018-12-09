@@ -81,7 +81,7 @@ export default class MapperEdit extends Component {
   render() {
     const { error, mapper, successfulSubmit } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {successfulSubmit && <Redirect to={`/mapper/${this.props.match.params.id}`} />}
         {error && <Message negative>{error}</Message>}
         {mapper ?
@@ -102,7 +102,7 @@ export default class MapperEdit extends Component {
               </List.Item>
             )}
             </List>
-            <Button onClick={this.handleMapperSubmit}>Submit</Button>
+            <Button primary onClick={this.handleMapperSubmit}>Submit</Button>
           </div>
         : <Loader>Loading mapper information</Loader>}
       </Segment>

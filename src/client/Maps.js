@@ -99,7 +99,7 @@ export default class Maps extends Component {
   render() {
     const { maps, error, sortOptions, sortSelected, searchTerm } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         <Input
           placeholder='Search'

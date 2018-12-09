@@ -155,7 +155,7 @@ export default class MapEdit extends Component {
   render() {
     const { successfulSubmit, map, error, allMappers, allTags, newMappers } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         {successfulSubmit && <Redirect to={`/map/${this.props.match.params.id}`} />}
         {map && allMappers ?
@@ -194,7 +194,7 @@ export default class MapEdit extends Component {
                   value={map.description} 
                 />
               </Segment>
-            <Button onClick={this.handleMapSubmit}>Submit</Button>
+            <Button primary onClick={this.handleMapSubmit}>Submit</Button>
           </div>
         : <Loader>Loading map information</Loader>}
       </Segment>

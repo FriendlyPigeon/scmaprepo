@@ -38,7 +38,7 @@ export default class Mapper extends Component {
   render() {
     const { error, mapper } = this.state;
     return(
-      <Segment>
+      <Segment inverted>
         {error && <Message negative>{error}</Message>}
         {mapper ?
           <div>
