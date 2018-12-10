@@ -28,11 +28,25 @@ export default class Maps extends Component {
           value: 'rating',
         }
       ],
-      sortSelected: '',
+      orderOptions: [
+        {
+          text: 'Ascending',
+          key: 'ascending',
+          value: 'ascending',
+        },
+        {
+          text: 'Descending',
+          key: 'descending',
+          value: 'descending',
+        }
+      ],
+      sortSelected: 'date',
+      orderSelected: 'descending',
       searchTerm: '',
     }
 
     this.handleSortDropdownChange = this.handleSortDropdownChange.bind(this);
+    this.handleOrderDropdownChange = this.handleOrderDropdownChange.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
   }
 
@@ -57,35 +71,128 @@ export default class Maps extends Component {
 
   handleSortDropdownChange(event, data) {
     let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let orderSelected = this.state.orderSelected
 
     if(data.value === 'name') {
-      newMapsArray.sort(function(a, b) {
-        let x = a.name.toLowerCase()
-        let y = b.name.toLowerCase()
-        if(x < y) { return -1 }
-        if(x > y) { return 1 }
-        return 0
-      })
+      if(orderSelected === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+      
     } else if(data.value === 'date') {
-      newMapsArray.sort(function(a, b) {
-        let x = a.created_at
-        let y = b.created_at
-        if(x < y) { return -1 }
-        if(x > y) { return 1 }
-        return 0
-      })
+      if(orderSelected === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+
     } else if(data.value === 'rating') {
-      newMapsArray.sort(function(a, b) {
-        let x = a.average_rating
-        let y = b.average_rating
-        if(x > y) { return -1 }
-        if(x < y) { return 1 }
-        return 0
-      })
+      if(orderSelected === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.average_rating
+          let y = b.average_rating
+          return x - y
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.average_rating
+          let y = b.average_rating
+          return y - x
+        })
+      }
     }
 
     this.setState({
       sortSelected: data.value,
+      maps: newMapsArray,
+    })
+  }
+
+  handleOrderDropdownChange(event, data) {
+    let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let sortSelected = this.state.sortSelected
+
+    if(sortSelected === 'name') {
+      if(data.value === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+      
+    } else if(sortSelected === 'date') {
+      if(data.value === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+
+    } else if(sortSelected === 'rating') {
+      if(data.value === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.average_rating
+          let y = b.average_rating
+          return x - y
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.average_rating
+          let y = b.average_rating
+          return y - x
+        })
+      }
+    }
+
+    this.setState({
+      orderSelected: data.value,
       maps: newMapsArray,
     })
   }
@@ -97,7 +204,7 @@ export default class Maps extends Component {
   }
   
   render() {
-    const { maps, error, sortOptions, sortSelected, searchTerm } = this.state;
+    const { maps, error, sortOptions, orderOptions, sortSelected, orderSelected, searchTerm } = this.state;
     return(
       <Segment inverted>
         {error && <Message negative>{error}</Message>}
@@ -112,6 +219,13 @@ export default class Maps extends Component {
           placeholder='Sort by' 
           selection 
           options={sortOptions}
+        />
+        <Dropdown
+          value={orderSelected}
+          onChange={this.handleOrderDropdownChange}
+          placeholder='Ascending'
+          selection
+          options={orderOptions}
         />
         <h3>
           <Link to='/map/new'>New map</Link>
