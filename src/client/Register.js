@@ -86,7 +86,7 @@ export default class Register extends Component {
           />
           </Form.Group>
 
-          <Button type="submit">Create account</Button>
+          <Button primary type="submit">Create account</Button>
         </Form>
     )
   }

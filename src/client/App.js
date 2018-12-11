@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-import { Button, Icon } from 'semantic-ui-react';
-
 import LoggedInContext from './LoggedInContext';
+import { CookiesProvider } from 'react-cookie';
+
 import Navbar from './Navbar';
 import Main from './Main';
 
@@ -82,7 +82,9 @@ export default class App extends Component {
           handleLogout: this.handleLogout,
         }}>
           <Navbar />
-          <Main />
+          <CookiesProvider>
+            <Main />
+          </CookiesProvider>
         </LoggedInContext.Provider>
       </div>
     )

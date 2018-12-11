@@ -396,7 +396,7 @@ export default class Map extends Component {
                 {fileUrl}
               </a>
             </List.Item>
-            <Button onClick={e => this.handleFileDelete(e, fileUrl)}>
+            <Button primary onClick={e => this.handleFileDelete(e, fileUrl)}>
               Delete
             </Button>
           </div>
@@ -457,7 +457,7 @@ export default class Map extends Component {
           {screenshotUrls && screenshotOpenUrl &&
             <Dimmer active={screenshotOpen} onClickOutside={this.handleScreenshotClose} page>
               <Image style={{ maxWidth: '100%', maxHeight: '100%' }} src={screenshotOpenUrl} size='huge'></Image>
-              <Button 
+              <Button primary
                 style={{ display: 'block', margin: 'auto' }} 
                 onClick={e => this.handleScreenshotDelete(e, screenshotOpenUrl)}
               >

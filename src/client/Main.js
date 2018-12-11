@@ -5,6 +5,10 @@ import { Button, Header, Icon, Modal } from 'semantic-ui-react'
 
 import LoggedInContext from './LoggedInContext';
 
+import { withCookies, Cookies } from 'react-cookie';
+import PropTypes, { instanceOf } from 'prop-types';
+
+import Home from './Home';
 import Maps from './Maps';
 import MapNew from './MapNew';
 import Map from './Map';
@@ -18,20 +22,25 @@ import TagNew from './TagNew';
 import Register from './Register';
 import Logout from './Logout';
 
-export default class Main extends Component {
+class Main extends Component {
   constructor(props) {
     super(props);
 
+    const { cookies } = props;
     this.state = {
-      ageModalOpen: true,
+      ageModalConfirmed: cookies.get('ageModalConfirmed') || false,
     }
 
     this.handleAgeModalClose = this.handleAgeModalClose.bind(this);
   }
 
   handleAgeModalClose() {
+    const { cookies } = this.props;
+
+    cookies.set('ageModalConfirmed', true, { path: '/' });
+
     this.setState({
-      ageModalOpen: false
+      ageModalConfirmed: true, 
     })
   }
 
@@ -39,7 +48,7 @@ export default class Main extends Component {
     return(
       <div>
       <Modal
-        open={this.state.ageModalOpen}
+        open={!this.state.ageModalConfirmed}
       >
         <Header icon='exclamation triangle' content='Cookies and age policy' />
         <Modal.Content>
@@ -73,6 +82,7 @@ export default class Main extends Component {
             <Route path='/tag/new' component={TagNew} />
             <Route path='/register' component={Register} />
             {loggedIn ? <Route path='/logout' component={Logout} /> : <Redirect from='/logout' to='/' />}
+            <Route path='/' component={Home} />
           </Switch>
         )}
       </LoggedInContext.Consumer>
@@ -80,3 +90,9 @@ export default class Main extends Component {
     )
   }
 }
+
+Main.PropTypes = {
+  cookies: instanceOf(Cookies).isRequired
+}
+
+export default withCookies(Main);

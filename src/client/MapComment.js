@@ -30,8 +30,8 @@ export default class MapComment extends Component {
               {comment.comment}
               <Button.Group style={{ float: 'right' }}>
                 {loggedInUser && loggedInUser === comment.user_id &&
-                  <Button compact onClick={(event) => this.props.onCommentDelete(comment.comment_id, event)}>delete</Button>}
-                <Button compact onClick={(event) => this.props.onReplyOpen(comment.comment_id, event)}>reply</Button>
+                  <Button primary compact onClick={(event) => this.props.onCommentDelete(comment.comment_id, event)}>delete</Button>}
+                <Button primary compact onClick={(event) => this.props.onReplyOpen(comment.comment_id, event)}>reply</Button>
               </Button.Group>
               {this.props.openReply === comment.comment_id && <MapCommentReply key={comment.comment_id} commentId={comment.comment_id} onCommentSubmit={this.props.onCommentSubmit}/>}
               {comment.replies && comment.replies.map((nestedComment) =>
