@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { Form, Message, Button, Segment } from 'semantic-ui-react';
+import { Form, Input, Message, Button, Segment } from 'semantic-ui-react';
 
 export default class Register extends Component {
   constructor(props) {
@@ -72,21 +72,28 @@ export default class Register extends Component {
               <Message negative key={error.msg}>{error.msg}</Message>)
           }
           <Form.Group>
-          <Form.Input
-            name="username"
-            label="Username"
-            value={username}
-            onChange={this.onFieldChange}
-          />
-          <Form.Input
-            name="email"
-            label="Email"
-            autoComplete="off"
-            value={email}
-            onChange={this.onFieldChange}
-          />
+            <Form.Field>
+              <label style={{ color: "#E9E9E9" }}>Username</label>
+              <input 
+                name="username"
+                label="Username"
+                value={username}
+                onChange={this.onFieldChange}
+              >
+              </input>
+            </Form.Field>
+            <Form.Field>
+              <label style={{ color: "#E9E9E9" }}>Email</label>
+              <input
+                name="email"
+                label="Email"
+                autoComplete="off"
+                value={email}
+                onChange={this.onFieldChange}
+              >
+              </input>
+            </Form.Field>
           </Form.Group>
-
           <Button primary type="submit">Create account</Button>
         </Form>
       </Segment>
