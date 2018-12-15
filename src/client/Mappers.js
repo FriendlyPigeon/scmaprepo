@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Loader, Divider, Message } from 'semantic-ui-react';
+import { Segment, Loader, Divider, Message, Input, Dropdown } from 'semantic-ui-react';
 
 export default class Mappers extends Component {
   constructor(props) {
@@ -11,7 +11,38 @@ export default class Mappers extends Component {
     this.state = {
       mappers: null,
       error: null,
+      sortOptions: [
+        {
+          text: 'Name',
+          key: 'name',
+          value: 'name',
+        },
+        {
+          text: 'Date uploaded',
+          key: 'date',
+          value: 'date',
+        }
+      ],
+      orderOptions: [
+        {
+          text: 'Ascending',
+          key: 'ascending',
+          value: 'ascending',
+        },
+        {
+          text: 'Descending',
+          key: 'descending',
+          value: 'descending',
+        }
+      ],
+      sortSelected: 'date',
+      orderSelected: 'descending',
+      searchTerm: '',
     }
+
+    this.handleSortDropdownChange = this.handleSortDropdownChange.bind(this);
+    this.handleOrderDropdownChange = this.handleOrderDropdownChange.bind(this);
+    this.handleSearch = this.handleSearch.bind(this);
   }
 
   componentDidMount() {
@@ -33,21 +64,147 @@ export default class Mappers extends Component {
       })
   }
 
+  handleSortDropdownChange(event, data) {
+    let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let orderSelected = this.state.orderSelected
+
+    if(data.value === 'name') {
+      if(orderSelected === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+      
+    } else if(data.value === 'date') {
+      if(orderSelected === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+    }
+
+    this.setState({
+      sortSelected: data.value,
+      maps: newMapsArray,
+    })
+  }
+
+  handleOrderDropdownChange(event, data) {
+    let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let sortSelected = this.state.sortSelected
+
+    if(sortSelected === 'name') {
+      if(data.value === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.name.toLowerCase()
+          let y = b.name.toLowerCase()
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+      
+    } else if(sortSelected === 'date') {
+      if(data.value === 'ascending') {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x < y) { return -1 }
+          if(x > y) { return 1 }
+          return 0
+        })
+      } else {
+        newMapsArray.sort(function(a, b) {
+          let x = a.created_at
+          let y = b.created_at
+          if(x > y) { return -1 }
+          if(x < y) { return 1 }
+          return 0
+        })
+      }
+    }
+
+    this.setState({
+      orderSelected: data.value,
+      maps: newMapsArray,
+    })
+  }
+  
+  handleSearch(event) {
+    this.setState({
+      searchTerm: event.target.value,
+    })
+  }
+
   render() {
-    const { mappers, error } = this.state;
+    const { mappers, error, sortOptions, orderOptions, sortSelected, orderSelected, searchTerm } = this.state;
     return(
       <Segment inverted>
         {error && <Message negative>{error}</Message>}
+        <Input
+          placeholder='Search'
+          onInput={this.handleSearch}
+          value={searchTerm}
+        />
+        <Dropdown
+          value={sortSelected} 
+          onChange={this.handleSortDropdownChange} 
+          placeholder='Sort by' 
+          selection 
+          options={sortOptions}
+        />
+        <Dropdown
+          value={orderSelected}
+          onChange={this.handleOrderDropdownChange}
+          placeholder='Ascending'
+          selection
+          options={orderOptions}
+        />
         <h3>
           <Link to='/mapper/new'>New mapper</Link>
         </h3>
         <Divider section />
         {mappers ?
-        mappers.map((mapper) =>
-          <h3 key={mapper.id}>
-            <Link to={`/mapper/${mapper.id}`}>{mapper.name}</Link>
-            <Divider section />
-          </h3>) 
+        mappers.map((mapper) => {
+          if(mapper.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+            return <h3 key={mapper.id}>
+              <Link to={`/mapper/${mapper.id}`}>{mapper.name}</Link>
+              <Divider section />
+            </h3>
+          }
+        }) 
         : <Loader>Loading mappers</Loader>}
       </Segment>
     )

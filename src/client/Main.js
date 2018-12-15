@@ -91,7 +91,7 @@ class Main extends Component {
   }
 }
 
-Main.PropTypes = {
+Main.propTypes = {
   cookies: instanceOf(Cookies).isRequired
 }
 
