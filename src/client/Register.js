@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { Form, Message, Button } from 'semantic-ui-react';
+import { Form, Message, Button, Segment } from 'semantic-ui-react';
 
 export default class Register extends Component {
   constructor(props) {
@@ -64,6 +64,7 @@ export default class Register extends Component {
   render() {
     const { username, email, registered, errors } = this.state;
     return(
+      <Segment inverted>
         <Form onSubmit={this.handleSubmit}>
           {registered && <Redirect to='/maps' />}
           {errors &&
@@ -88,6 +89,7 @@ export default class Register extends Component {
 
           <Button primary type="submit">Create account</Button>
         </Form>
+      </Segment>
     )
   }
 }
