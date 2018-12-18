@@ -48,7 +48,7 @@ export default class Mapper extends Component {
               to={`/mapper/${this.props.match.params.id}/edit`}
             >Edit</Link>
             <Divider />
-            <a href={`https://steamcommunity.com/profiles/${mapper.steam_id}`}>Steam profile</a>
+            {mapper.steam_id && <a href={`https://steamcommunity.com/profiles/${mapper.steam_id}`}>Steam profile</a>}
             <h2>Maps</h2>
             <List>
             {mapper.maps && mapper.maps.map((map, id) =>

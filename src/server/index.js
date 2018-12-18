@@ -959,11 +959,21 @@ app.get('/api/mapper/:id', function(req, res) {
 app.post('/api/mapper', isLoggedIn, function(req, res) {
   if(req.body.name === '') {
     return res.status(400).send({ error: 'Name can not be blank' })
-  }
-  fetch(`https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${process.env.STEAM_API_KEY}&vanityurl=${req.body.vanityurl}`)
+  } else if (req.body.vanityurl === '') {
+    knex('mappers')
+      .insert({
+        name: req.body.name,
+      })
+      .then(() => {
+        return res.send({
+          success: 'Successful mapper submit',
+        })
+      })
+  } else {
+    fetch(`https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${process.env.STEAM_API_KEY}&vanityurl=${req.body.vanityurl}`)
     .then(res => res.json())
     .then(json => {
-      if(json.response.success = 1) {
+      if(json.response.success = 1 && json.response.steamid) {
         knex('mappers')
           .insert({
             name: req.body.name,
@@ -978,6 +988,7 @@ app.post('/api/mapper', isLoggedIn, function(req, res) {
         return res.status(400).send({ error: 'Invalid steam profile' })
       }
     })
+  }
 })
 
 app.put('/api/mapper/:id', isLoggedIn, function(req, res) {
