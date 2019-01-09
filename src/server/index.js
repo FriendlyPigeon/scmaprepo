@@ -479,9 +479,12 @@ app.get('/api/map/:id/screenshots', function(req, res) {
 app.post('/api/map/:id/files', isLoggedIn, function(req, res) {
   if(req.user === undefined) {
     return res.status(403).send({ error: 'You must be logged in to upload a file.' })
-  } else if(['application/x-7z-compressed',
-      'application/x-rar-compressed',
-      'application/x-zip-compressed']
+  } else if([
+        'application/x-7z-compressed',
+        'application/x-rar',
+        'application/x-rar-compressed',
+        'application/zip',
+      ]
       .includes(req.files.file.mimetype) === false) 
     {
       return res.status(400).send({ error: 'Uploaded file must be of type 7Z, RAR, or ZIP' })
