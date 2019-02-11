@@ -4,8 +4,12 @@ import { Link, Redirect } from 'react-router-dom';
 
 import { Segment, Button, Rating, Dimmer, Modal, Image, Loader, Divider, Message, List } from 'semantic-ui-react';
 
+import { Editor, EditorState, convertFromRaw } from 'draft-js';
+
 import MapComments from './MapComments';
 import MapScreenshots from './MapScreenshots';
+
+import LoggedInContext from './LoggedInContext';
 
 export default class Map extends Component {
   constructor(props) {
@@ -45,7 +49,6 @@ export default class Map extends Component {
         else { throw response }
       })
       .then(map => {
-        console.log(map)
         this.setState({
           mapId: id,
           map: map
@@ -366,6 +369,8 @@ export default class Map extends Component {
   render() {
     const { error, mapId, map, fileUrls, averageRating, personalRating, thumbnailUrls, screenshotUrls, screenshotOpen, screenshotOpenUrl, comments, successfulDelete } = this.state;
     return(
+      <LoggedInContext.Consumer>
+      {({ loggedIn, loggedInUser }) => (
       <Segment inverted>
       {successfulDelete && <Redirect to={'/maps'} />}
       {error && <Message negative>{error}</Message>}
@@ -443,9 +448,7 @@ export default class Map extends Component {
           }
 
           <h3>Description</h3>
-            <Segment style={{ backgroundColor: '#222222', color: '#FFFFFF' }}>
-              {map.description}
-            </Segment>
+          <Editor editorState={EditorState.createWithContent(convertFromRaw(JSON.parse(map.description)))} readOnly />
 
           <h3>Screenshots</h3>
           {thumbnailUrls && thumbnailUrls.map((thumbnailUrl, index) =>
@@ -476,6 +479,8 @@ export default class Map extends Component {
         </div>
         : <Loader>Loading map information</Loader>}
       </Segment>
+      )}
+      </LoggedInContext.Consumer>
     )
   }
 }

@@ -782,7 +782,7 @@ app.post('/api/map/:id/rating', isLoggedIn, function(req, res) {
 
 function getComments(mapId) {
   return new Promise(function(resolve, reject) {
-    knex.select('users.id as user_id', 'users.username', 'map_comments.comment', 'map_comments.id as comment_id', 'map_comments.reply_to_id')
+    knex.select('users.steam_id', 'users.username', 'map_comments.comment', 'map_comments.id as comment_id', 'map_comments.reply_to_id')
       .from('map_comments')
       .leftOuterJoin('users', 'map_comments.steam_id', 'users.steam_id')
       .innerJoin('maps', 'map_comments.map_id', 'maps.id')
@@ -895,9 +895,36 @@ app.post('/api/map/:id/comments', isLoggedIn, function(req, res) {
   }
 })
 
+app.put('/api/map/:id/comments', function(req, res) {
+  if(req.user.steamid === undefined) {
+    res.status(401).json({ error: 'You must be logged in as this user to update this comment' })
+    res.send();
+  } else {
+    knex.select('map_comments.id', 'map_comments.steam_id')
+    .from('map_comments')
+    .where('map_comments.id', req.body.comment_id)
+    .first()
+    .then(function(comment) {
+      if(comment.steam_id === req.user.steamid) {
+        knex('map_comments')
+        .where('map_comments.id', comment.id)
+        .update({
+          comment: req.body.comment
+        })
+        .then(function() {
+          getComments(req.params.id)
+          .then(function(comments) {
+            res.send(formatToNestedComments(comments))
+          })
+        })
+      }
+    })
+  }
+})
+
 app.delete('/api/map/:id/comments', function(req, res) {
   // Make sure user is logged in
-  if(req.session.userId === undefined) {
+  if(req.user.steamid === undefined) {
     res.status(401).json({ error: 'You must be logged in as this user to delete this comment' });
     res.send();
   } else {
@@ -1041,8 +1068,8 @@ app.get('*', function(req, res) {
 const httpServer = http.createServer(app);
 if(process.env.NODE_ENV === 'production') {
   const httpsServer = https.createServer(credentials, app)
-  httpServer.listen(80)
-  httpsServer.listen(443)
+  httpServer.listen(8080)
+  httpsServer.listen(9443)
 } else {
   httpServer.listen(process.env.NODE_ENV || 8080)
 }

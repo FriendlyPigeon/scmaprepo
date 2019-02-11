@@ -4,12 +4,16 @@ import { Link, Redirect } from 'react-router-dom';
 
 import { Segment, Loader, Divider, Input, Message, List, Dropdown, Button } from 'semantic-ui-react';
 
+import DraftEditor from './DraftEditor';
+import { EditorState, convertToRaw } from 'draft-js';
+
 export default class MapEdit extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       successfulSubmit: false,
+      descriptionState: EditorState.createEmpty(),
       map: null,
       allMappers: null,
       allTags: null,
@@ -107,19 +111,17 @@ export default class MapEdit extends Component {
     })
   }
 
-  handleDescriptionChange(event) {
-    let mapWithNewDescription = Object.assign({}, this.state.map);
-    mapWithNewDescription.description = event.target.value;
-    console.log(mapWithNewDescription);
-
+  handleDescriptionChange(editorState) {
     this.setState({
-      map: mapWithNewDescription,
+      descriptionState: editorState,
     })
   }
 
   handleMapSubmit() {
     const { id } = this.props.match.params;
-    const { map, newMappers } = this.state;
+    const { map, newMappers, descriptionState } = this.state;
+
+    const rawDescription = convertToRaw(descriptionState.getCurrentContent());
 
     fetch(`/api/map/${id}`, {
       method: 'PUT',
@@ -129,7 +131,7 @@ export default class MapEdit extends Component {
       },
       body: JSON.stringify({
         name: map.name,
-        description: map.description,
+        description: descriptionState,
         authors: map.mapper_ids || [],
         tags: map.tag_ids || [],
       })
@@ -153,7 +155,7 @@ export default class MapEdit extends Component {
   }
 
   render() {
-    const { successfulSubmit, map, error, allMappers, allTags, newMappers } = this.state;
+    const { successfulSubmit, map, error, allMappers, allTags, newMappers, descriptionState } = this.state;
     return(
       <Segment inverted>
         {error && <Message negative>{error}</Message>}
@@ -187,13 +189,7 @@ export default class MapEdit extends Component {
                 options={allTags}
               />
             <h3>Description</h3>
-              <Segment>
-                <Input
-                  onChange={this.handleDescriptionChange}
-                  placeholder='Map description' 
-                  value={map.description} 
-                />
-              </Segment>
+            <DraftEditor editorState={descriptionState} update={this.handleDescriptionChange} />
             <Button primary onClick={this.handleMapSubmit}>Submit</Button>
           </div>
         : <Loader>Loading map information</Loader>}

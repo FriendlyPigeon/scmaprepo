@@ -2,38 +2,33 @@ import React, { Component } from 'react';
 
 import { Segment, TextArea, Form, Button } from 'semantic-ui-react';
 
+import DraftEditor from './DraftEditor';
+import { EditorState, convertToRaw } from 'draft-js';
+
 export default class MapCommentReply extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      newComment: '',
+      newCommentState: EditorState.createEmpty(),
     }
 
-    this.handleFieldChange = this.handleFieldChange.bind(this);
+    this.handleCommentChange = this.handleCommentChange.bind(this);
   }
 
-  handleFieldChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
+  handleCommentChange(newCommentState) {
+    this.setState({
+      newCommentState: newCommentState,
+    })
   }
 
   render() {
-    const { newComment } = this.state;
+    const { newCommentState } = this.state;
     return(
-      <Segment inverted>
-        <Form onSubmit={() => this.props.onCommentSubmit(this.props.commentId, newComment)}>
-          <TextArea
-            autoHeight 
-            rows={5}
-            name='newComment'
-            value={newComment}
-            onChange={this.handleFieldChange}
-          >
-          </TextArea>
-
-          <Button>Submit</Button>
-        </Form>
-      </Segment>
+      <Form reply onSubmit={() => this.props.onCommentSubmit(this.props.commentId, newCommentState)}>
+        <DraftEditor editorState={newCommentState} update={this.handleCommentChange} />
+        <Button primary compact>Submit</Button>
+      </Form>
     )
   }
 }

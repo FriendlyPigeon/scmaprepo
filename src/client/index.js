@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import "semantic-ui-less/semantic.less";
 import "./style.css";
+import "draft-js/dist/Draft.css";
 
 import App from './App';
 

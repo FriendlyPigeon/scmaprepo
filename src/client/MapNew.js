@@ -4,6 +4,9 @@ import { Redirect } from 'react-router-dom';
 
 import { Segment, Divider, Dropdown, Button, Input, TextArea, Form, Message } from 'semantic-ui-react';
 
+import DraftEditor from './DraftEditor';
+import { EditorState, convertToRaw } from 'draft-js';
+
 export default class MapNew extends Component {
   constructor(props) {
     super(props);
@@ -11,7 +14,7 @@ export default class MapNew extends Component {
     this.state = {
       successfulSubmit: false,
       mapName: '',
-      mapDescription: '',
+      descriptionState: EditorState.createEmpty(),
       allMappers: null,
       allTags: null,
       newMappers: [],
@@ -20,6 +23,7 @@ export default class MapNew extends Component {
     }
 
     this.handleFieldChange = this.handleFieldChange.bind(this);
+    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleMapperDropdownChange = this.handleMapperDropdownChange.bind(this);
     this.handleTagDropdownChange = this.handleTagDropdownChange.bind(this);
     this.handleMapSubmit = this.handleMapSubmit.bind(this);
@@ -65,8 +69,16 @@ export default class MapNew extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
+  handleDescriptionChange(editorState) {
+    this.setState({
+      descriptionState: editorState,
+    })
+  }
+
   handleMapSubmit() {
-    const { mapName, mapDescription, newMappers, newTags } = this.state;
+    const { mapName, descriptionState, newMappers, newTags } = this.state;
+
+    const rawDescription = convertToRaw(descriptionState.getCurrentContent());
 
     fetch('/api/map', {
       method: 'POST',
@@ -76,7 +88,7 @@ export default class MapNew extends Component {
       },
       body: JSON.stringify({
         name: mapName,
-        description: mapDescription,
+        description: rawDescription,
         authors: newMappers,
         tags: newTags,
       })
@@ -111,7 +123,14 @@ export default class MapNew extends Component {
   }
 
   render() {
-    const { successfulSubmit, mapName, error, mapDescription, allMappers, allTags, newMappers, newTags } = this.state;
+    const { successfulSubmit,
+            mapName,
+            error,
+            allMappers,
+            allTags,
+            newMappers,
+            newTags,
+            descriptionState } = this.state;
     return(
       <Segment inverted>
         {error && <Message negative>{error}</Message>}
@@ -148,15 +167,7 @@ export default class MapNew extends Component {
               options={allTags}
             />
           <h3>Description</h3>
-          
-            <TextArea 
-            autoHeight 
-            rows={5}
-            name='mapDescription'
-            placeholder='Map description'
-            value={mapDescription}
-            onChange={this.handleFieldChange}
-            />
+          <DraftEditor editorState={descriptionState} update={this.handleDescriptionChange} />
           </Form>
           
           <Button primary style={{ display: 'block' }} onClick={this.handleMapSubmit}>Submit</Button>
