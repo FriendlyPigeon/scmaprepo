@@ -65,12 +65,12 @@ export default class Mappers extends Component {
   }
 
   handleSortDropdownChange(event, data) {
-    let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let newMappersArray = JSON.parse(JSON.stringify(this.state.mappers))
     let orderSelected = this.state.orderSelected
 
     if(data.value === 'name') {
       if(orderSelected === 'ascending') {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.name.toLowerCase()
           let y = b.name.toLowerCase()
           if(x < y) { return -1 }
@@ -78,7 +78,7 @@ export default class Mappers extends Component {
           return 0
         })
       } else {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.name.toLowerCase()
           let y = b.name.toLowerCase()
           if(x > y) { return -1 }
@@ -89,7 +89,7 @@ export default class Mappers extends Component {
       
     } else if(data.value === 'date') {
       if(orderSelected === 'ascending') {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.created_at
           let y = b.created_at
           if(x < y) { return -1 }
@@ -97,7 +97,7 @@ export default class Mappers extends Component {
           return 0
         })
       } else {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.created_at
           let y = b.created_at
           if(x > y) { return -1 }
@@ -109,17 +109,17 @@ export default class Mappers extends Component {
 
     this.setState({
       sortSelected: data.value,
-      maps: newMapsArray,
+      mappers: newMappersArray,
     })
   }
 
   handleOrderDropdownChange(event, data) {
-    let newMapsArray = JSON.parse(JSON.stringify(this.state.maps))
+    let newMappersArray = JSON.parse(JSON.stringify(this.state.mappers))
     let sortSelected = this.state.sortSelected
 
     if(sortSelected === 'name') {
       if(data.value === 'ascending') {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.name.toLowerCase()
           let y = b.name.toLowerCase()
           if(x < y) { return -1 }
@@ -127,7 +127,7 @@ export default class Mappers extends Component {
           return 0
         })
       } else {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.name.toLowerCase()
           let y = b.name.toLowerCase()
           if(x > y) { return -1 }
@@ -138,7 +138,7 @@ export default class Mappers extends Component {
       
     } else if(sortSelected === 'date') {
       if(data.value === 'ascending') {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.created_at
           let y = b.created_at
           if(x < y) { return -1 }
@@ -146,7 +146,7 @@ export default class Mappers extends Component {
           return 0
         })
       } else {
-        newMapsArray.sort(function(a, b) {
+        newMappersArray.sort(function(a, b) {
           let x = a.created_at
           let y = b.created_at
           if(x > y) { return -1 }
@@ -158,7 +158,7 @@ export default class Mappers extends Component {
 
     this.setState({
       orderSelected: data.value,
-      maps: newMapsArray,
+      mappers: newMappersArray,
     })
   }
   
