@@ -70,7 +70,7 @@ class Main extends Component {
       <LoggedInContext.Consumer>
         {({ loggedIn }) => (
           <Switch>
-            <Route path='/maps' component={Maps} />
+            <Route path='/maps/:tag?' component={Maps} />
             <Route path='/map/new' component={MapNew} />
             <Route path='/map/:id/edit' component={MapEdit} />
             <Route path='/map/:id' component={Map} />

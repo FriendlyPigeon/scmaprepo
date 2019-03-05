@@ -43,6 +43,7 @@ export default class Maps extends Component {
       sortSelected: 'date',
       orderSelected: 'descending',
       searchTerm: '',
+      tagSelected: props.match.params.tag || ''
     }
 
     this.handleSortDropdownChange = this.handleSortDropdownChange.bind(this);
@@ -205,6 +206,7 @@ export default class Maps extends Component {
   
   render() {
     const { maps, error, sortOptions, orderOptions, sortSelected, orderSelected, searchTerm } = this.state;
+    const { location, match } = this.props;
     return(
       <Segment inverted>
         {error && <Message negative>{error}</Message>}
@@ -234,7 +236,8 @@ export default class Maps extends Component {
         {maps ?
         maps.map((map) => {
           if(map.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-            return <h3 key={map.id}>
+            if(!match.params.tag || map.tag_names.includes(match.params.tag)) {
+              return <h3 key={map.id}>
               <Link to={`/map/${map.id}`}>{map.name}</Link>
               <Rating 
                 icon='star'
@@ -243,7 +246,8 @@ export default class Maps extends Component {
                 disabled
               /> 
               <Divider section />
-            </h3>
+              </h3>
+            }
           }
         })
         : <Loader>Loading maps</Loader>}

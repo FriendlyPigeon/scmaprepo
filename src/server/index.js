@@ -231,14 +231,65 @@ app.get('/api/users/logout', function(req, res) {
 })
 
 app.get('/api/maps', function(req, res) {
-  knex.select('maps.id', 'maps.name', 'maps.created_at', knex.raw('avg(map_ratings.rating) as average_rating'))
+  knex.select('maps.id', 'maps.name', knex.raw('array_agg(tags.name) as tag_names'), knex.raw('avg(map_ratings.rating) as average_rating'))
     .from('maps')
     .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
+    .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
+    .leftJoin('tags', 'map_tags.tag_id', 'tags.id')
     .groupBy('maps.id', 'maps.name', 'maps.created_at')
     .then(function(maps) {
       res.send(maps);
     })
 })
+
+async function getRecentMapsThumbnails(maps) {
+  let thumbnails = await Promise.all(maps.map(map => {
+    return storage.bucket(bucketName).getFiles({ prefix: `map/${map.id}/thumbnails` })
+      .then(thumbnails => {
+        return thumbnails[0]
+      })
+  }))
+
+  let thumbnailsUrls = thumbnails.map(map => {
+    return `https://storage.googleapis.com/scmaprepo-files/${map[0].metadata.name}`
+  })
+
+  maps.map((map, index) => {
+    return map.thumbnail_url = thumbnailsUrls[index]
+  })
+
+  return Promise.resolve(maps)
+}
+
+app.get('/api/maps/recent', function(req, res) {
+  knex.select('maps.id', 'maps.name', 'maps.created_at', knex.raw('avg(map_ratings.rating) as average_rating'))
+    .from('maps')
+    .limit(5)
+    .orderBy('maps.created_at', 'desc')
+    .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
+    .groupBy('maps.id', 'maps.name', 'maps.created_at')
+    .then(function(maps) {
+      getRecentMapsThumbnails(maps)
+      .then((maps) => {
+        res.send(maps)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+    })
+})
+
+async function getAdmins() {
+  let admins = 
+    await knex.select('users.steam_id')
+            .from('users')
+            .where('is_admin', true)
+            .then(admins => {
+              return admins
+            })
+
+  return admins
+}
 
 app.get('/api/map/:id', function(req, res) {
   const mapId = req.params.id;
@@ -247,17 +298,25 @@ app.get('/api/map/:id', function(req, res) {
       knex.raw('array_agg(distinct mappers.name) as authors'),
       knex.raw('array_agg(distinct authors.mapper_id) as mapper_ids'),
       knex.raw('array_agg(distinct tags.name) as tags'),
-      knex.raw('array_agg(distinct map_tags.tag_id) as tag_ids'))
+      knex.raw('array_agg(distinct map_tags.tag_id) as tag_ids'),
+      knex.raw('array_agg(distinct mappers.steam_id) as write_users'))
     .from('maps')
     .leftJoin('authors', 'maps.id', 'authors.map_id')
     .leftJoin('mappers', 'authors.mapper_id', 'mappers.id')
     .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
     .leftJoin('tags', 'map_tags.tag_id', 'tags.id')
+    .leftOuterJoin('users', 'users.steam_id', 'users.steam_id')
     .where('maps.id', mapId)
     .groupBy('maps.name', 'maps.description')
     .first()
     .then(function(map) {
-      res.send(map);
+      getAdmins()
+      .then(admins => {
+        admins.map(admin => {
+          map.write_users.push(admin.steam_id)
+        })
+        res.send(map);
+      })
     })
 })
 

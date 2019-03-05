@@ -131,7 +131,7 @@ export default class MapEdit extends Component {
       },
       body: JSON.stringify({
         name: map.name,
-        description: descriptionState,
+        description: rawDescription,
         authors: map.mapper_ids || [],
         tags: map.tag_ids || [],
       })

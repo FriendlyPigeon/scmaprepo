@@ -378,6 +378,7 @@ export default class Map extends Component {
         <div>
           <h2>{map.name}</h2>
 
+          {map.write_users.includes(loggedInUser) && 
           <Button.Group style={{ float: 'right' }}>
             <Link to={`/map/${mapId}/edit`}>
               <Button primary>
@@ -388,7 +389,7 @@ export default class Map extends Component {
             <Button primary onClick={e => this.handleMapDelete(e)}>
               Delete
             </Button>
-          </Button.Group>
+          </Button.Group>}
           
           <Divider />
 
@@ -401,9 +402,10 @@ export default class Map extends Component {
                 {fileUrl}
               </a>
             </List.Item>
+            {map.write_users.includes(loggedInUser) &&
             <Button primary onClick={e => this.handleFileDelete(e, fileUrl)}>
               Delete
-            </Button>
+            </Button>}
           </div>
           )}
           </List>

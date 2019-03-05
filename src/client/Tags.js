@@ -230,7 +230,10 @@ export default class Tags extends Component {
         tags.map((tag) => {
           if(tag.name.toLowerCase().includes(searchTerm.toLowerCase())) {
             return <h3 key={tag.id}>
-              <Link to={`/maps?tag=${tag.name}`}>{tag.name}</Link>
+              <Link to={{
+                pathname: `/maps/${tag.name}`,
+                query: { tag: tag.name }
+              }}>{tag.name}</Link>
               <Divider section />
             </h3>
           }
