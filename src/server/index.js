@@ -238,9 +238,14 @@ async function getRecentMapsThumbnails(maps) {
       })
   }))
 
-  let thumbnailsUrls = thumbnails.map(map => {
-    return `https://storage.googleapis.com/scmaprepo-files/${map[0].metadata.name}`
-  })
+  let thumbnailsUrls = []
+
+  if(thumbnails) {
+    thumbnailsUrls = thumbnails.map(map => {
+      return `https://storage.googleapis.com/scmaprepo-files/${map[0].metadata.name}`
+    })
+  }
+  
 
   maps.map((map, index) => {
     return map.thumbnail_url = thumbnailsUrls[index]
