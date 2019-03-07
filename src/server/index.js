@@ -230,18 +230,6 @@ app.get('/api/users/logout', function(req, res) {
   }
 })
 
-app.get('/api/maps', function(req, res) {
-  knex.select('maps.id', 'maps.name', knex.raw('array_agg(tags.name) as tag_names'), knex.raw('avg(map_ratings.rating) as average_rating'))
-    .from('maps')
-    .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
-    .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
-    .leftJoin('tags', 'map_tags.tag_id', 'tags.id')
-    .groupBy('maps.id', 'maps.name', 'maps.created_at')
-    .then(function(maps) {
-      res.send(maps);
-    })
-})
-
 async function getRecentMapsThumbnails(maps) {
   let thumbnails = await Promise.all(maps.map(map => {
     return storage.bucket(bucketName).getFiles({ prefix: `map/${map.id}/thumbnails` })
@@ -260,6 +248,24 @@ async function getRecentMapsThumbnails(maps) {
 
   return Promise.resolve(maps)
 }
+
+app.get('/api/maps', function(req, res) {
+  knex.select('maps.id', 'maps.name', knex.raw('array_agg(tags.name) as tag_names'), knex.raw('avg(map_ratings.rating) as average_rating'))
+    .from('maps')
+    .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
+    .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
+    .leftJoin('tags', 'map_tags.tag_id', 'tags.id')
+    .groupBy('maps.id', 'maps.name', 'maps.created_at')
+    .then(function(maps) {
+      getRecentMapsThumbnails(maps)
+      .then((maps) => {
+        res.send(maps)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+    })
+})
 
 app.get('/api/maps/recent', function(req, res) {
   knex.select('maps.id', 'maps.name', 'maps.created_at', knex.raw('avg(map_ratings.rating) as average_rating'))

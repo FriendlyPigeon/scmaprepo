@@ -37,7 +37,7 @@ class Main extends Component {
   handleAgeModalClose() {
     const { cookies } = this.props;
 
-    cookies.set('ageModalConfirmed', true, { path: '/' });
+    cookies.set('ageModalConfirmed', true, { path: '/', expires: new Date(Date.now()+15552000000) });
 
     this.setState({
       ageModalConfirmed: true, 

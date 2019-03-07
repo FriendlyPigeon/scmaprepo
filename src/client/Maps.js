@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Segment, Dropdown, Input, Loader, Dimmer, Divider, Message, Rating } from 'semantic-ui-react';
+import { Segment, Dropdown, Input, Loader, Image, Divider, Message, Rating } from 'semantic-ui-react';
 
 export default class Maps extends Component {
   constructor(props) {
@@ -245,6 +245,7 @@ export default class Maps extends Component {
                 maxRating={10}
                 disabled
               /> 
+              <Image src={map.thumbnail_url} size='small' />
               <Divider section />
               </h3>
             }
