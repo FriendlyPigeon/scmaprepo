@@ -238,14 +238,13 @@ async function getRecentMapsThumbnails(maps) {
       })
   }))
 
-  let thumbnailsUrls = []
-
-  if(thumbnails) {
-    thumbnailsUrls = thumbnails.map(map => {
+  let thumbnailsUrls = thumbnails.map(map => {
+    if(map[0]) {
       return `https://storage.googleapis.com/scmaprepo-files/${map[0].metadata.name}`
-    })
-  }
-  
+    } else {
+      return `https://i.imgur.com/QPtuMUd.png`
+    }
+  })
 
   maps.map((map, index) => {
     return map.thumbnail_url = thumbnailsUrls[index]
