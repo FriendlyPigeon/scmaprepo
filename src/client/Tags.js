@@ -16,11 +16,6 @@ export default class Tags extends Component {
           text: 'Name',
           key: 'name',
           value: 'name',
-        },
-        {
-          text: 'Date uploaded',
-          key: 'date',
-          value: 'date',
         }
       ],
       orderOptions: [
@@ -35,8 +30,8 @@ export default class Tags extends Component {
           value: 'descending',
         }
       ],
-      sortSelected: 'date',
-      orderSelected: 'descending',
+      sortSelected: 'name',
+      orderSelected: 'ascending',
       searchTerm: '',
     }
 
@@ -84,40 +79,6 @@ export default class Tags extends Component {
           if(x > y) { return -1 }
           if(x < y) { return 1 }
           return 0
-        })
-      }
-      
-    } else if(data.value === 'date') {
-      if(orderSelected === 'ascending') {
-        newTagsArray.sort(function(a, b) {
-          let x = a.created_at
-          let y = b.created_at
-          if(x < y) { return -1 }
-          if(x > y) { return 1 }
-          return 0
-        })
-      } else {
-        newTagsArray.sort(function(a, b) {
-          let x = a.created_at
-          let y = b.created_at
-          if(x > y) { return -1 }
-          if(x < y) { return 1 }
-          return 0
-        })
-      }
-
-    } else if(data.value === 'rating') {
-      if(orderSelected === 'ascending') {
-        newTagsArray.sort(function(a, b) {
-          let x = a.average_rating
-          let y = b.average_rating
-          return x - y
-        })
-      } else {
-        newTagsArray.sort(function(a, b) {
-          let x = a.average_rating
-          let y = b.average_rating
-          return y - x
         })
       }
     }

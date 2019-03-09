@@ -254,7 +254,7 @@ async function getRecentMapsThumbnails(maps) {
 }
 
 app.get('/api/maps', function(req, res) {
-  knex.select('maps.id', 'maps.name', knex.raw('array_agg(tags.name) as tag_names'), knex.raw('avg(map_ratings.rating) as average_rating'))
+  knex.select('maps.id', 'maps.name', knex.raw('array_agg(tags.name) as tag_names'), knex.raw('avg(map_ratings.rating) as average_rating'), 'maps.created_at')
     .from('maps')
     .leftJoin('map_ratings', 'maps.id', 'map_ratings.map_id')
     .leftJoin('map_tags', 'maps.id', 'map_tags.map_id')
@@ -347,7 +347,7 @@ app.get('/api/tags/dropdown', function(req, res) {
 })
 
 app.get('/api/mappers', function(req, res) {
-  knex.select('mappers.id', 'mappers.name')
+  knex.select('mappers.id', 'mappers.name', 'mappers.created_at')
     .from('mappers')
     .then(function(mappers) {
       res.send(mappers);
