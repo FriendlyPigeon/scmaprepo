@@ -301,6 +301,18 @@ async function getAdmins() {
   return admins
 }
 
+async function getUploader(mapId) {
+  let uploader =
+    await knex.select('maps.uploader as steam_id')
+            .from('maps')
+            .where('maps.id', mapId)
+            .then(uploader => {
+              return uploader
+            })
+
+  return uploader
+}
+
 app.get('/api/map/:id', function(req, res) {
   const mapId = req.params.id;
 
@@ -324,8 +336,12 @@ app.get('/api/map/:id', function(req, res) {
       .then(admins => {
         admins.map(admin => {
           map.write_users.push(admin.steam_id)
+          getUploader(mapId)
+          .then(uploader => {
+            map.write_users.push(uploader[0].steam_id)
+            res.send(map)
+          })
         })
-        res.send(map);
       })
     })
 })
